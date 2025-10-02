@@ -36,24 +36,37 @@ do {                                \
         CLEAR_RESOURCES();          \
         return 0;                   \
     }                               \
-} while (false) //TODO - I don't use it in STACK_CREATE
+} while (false)
 
-#ifdef _DEBUG //TODO -
+#ifdef _DEBUG
 #define ON_DEBUG(...) __VA_ARGS__
 #else
 #define ON_DEBUG(...)
 #endif
 
-enum User_error_code
-{
+typedef double assembler_elem;
+
+struct Position_info {
+    char const *file_name,
+               *function_name;
+    size_t     line;
+};
+
+struct Var_info {
+    Position_info position;
+    char const    *name;
+};
+
+enum User_error_code {
     NO_ERROR,                    ///< Code 0
     UNKNOWN_OPTION,              ///< Code 1
     NOT_ENOUGH_OPTION_ARGUMENTS, ///< Code 2
-    __INVALID_ERROR,             ///< Code 3
+    UNKNOWN_OPERATION,           ///< Code 3
+    CODE_TOO_LONG,               ///< Code 4
+    __INVALID_ERROR,             ///< Code 5
 };
 
-struct User_error
-{
+struct User_error {
     char                   **data;
     size_t                 str_cnt;
     enum User_error_code   code;
@@ -66,8 +79,7 @@ errno_t construct_User_error(struct User_error *error_ptr, enum User_error_code 
 
 void destruct_User_error(struct User_error *error_ptr);
 
-struct Config
-{
+struct Config {
     FILE *input_stream,
          *output_stream;
     bool is_help;

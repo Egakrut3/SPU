@@ -4,8 +4,7 @@
 #include <string.h>
 
 errno_t construct_User_error(struct User_error *const error_ptr, enum User_error_code const code,
-                                                                 size_t const str_cnt, ...)
-{
+                                                                 size_t const str_cnt, ...) {
     assert(error_ptr); assert(!error_ptr->is_valid);
 
     va_list arg_list = nullptr;
@@ -17,8 +16,7 @@ errno_t construct_User_error(struct User_error *const error_ptr, enum User_error
 
     error_ptr->code    = code;
     error_ptr->str_cnt = str_cnt;
-    if (!str_cnt)
-    {
+    if (!str_cnt) {
         error_ptr->data     = nullptr;
         error_ptr->is_valid = true;
         CLEAR_RESOURCES();
@@ -26,23 +24,20 @@ errno_t construct_User_error(struct User_error *const error_ptr, enum User_error
     }
 
     error_ptr->data = (char **)calloc(str_cnt, sizeof(char *));
-    if (!error_ptr->data)
-    {
+    if (!error_ptr->data) {
         PRINT_LINE();
         perror("calloc failed");
         CLEAR_RESOURCES();
         return errno;
     }
 
-    for (size_t i = 0; i < str_cnt; ++i)
-    {
+    for (size_t i = 0; i < str_cnt; ++i) {
         char const *const new_str = va_arg(arg_list, char const *);
 
         assert(new_str);
 
         error_ptr->data[i] = strdup(new_str);
-        if (!error_ptr->data[i])
-        {
+        if (!error_ptr->data[i]) {
             PRINT_LINE();
             perror("strdup failed");
             CLEAR_RESOURCES();
@@ -55,16 +50,14 @@ errno_t construct_User_error(struct User_error *const error_ptr, enum User_error
     return 0;
 }
 
-void destruct_User_error(struct User_error *const error_ptr)
-{
-    assert(error_ptr); assert(error_ptr->is_valid);
+void destruct_User_error(struct User_error *const error_ptr) {
+    assert(error_ptr);
 
 #undef FINAL_CODE
 #define FINAL_CODE
 
     error_ptr->is_valid = false;
-    for (size_t i = 0; i < error_ptr->str_cnt; ++i)
-    {
+    for (size_t i = 0; i < error_ptr->str_cnt; ++i) {
         assert(error_ptr->data); assert(error_ptr->data[i]);
 
         free(error_ptr->data[i]);
@@ -74,8 +67,7 @@ void destruct_User_error(struct User_error *const error_ptr)
     CLEAR_RESOURCES();
 }
 
-void destruct_Config(struct Config *const config_ptr)
-{
+void destruct_Config(struct Config *const config_ptr) {
     assert(config_ptr);
 
 #undef FINAL_CODE

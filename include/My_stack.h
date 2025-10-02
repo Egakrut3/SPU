@@ -4,37 +4,51 @@
 #include "Common.h"
 
 typedef int stack_elem_t;
-char const stack_elem_str[] = "int",
-           stack_elem_frm[] = "%d";
+char const stack_elem_str[]   = "int",
+           stack_elem_frm[]   = "%d",
+           stack_canary_frm[] = "%#X";
+#ifdef _DEBUG
+size_t const CANARY_NUM = 1;
+#else
+size_t const CANARY_NUM = 0;
+#endif
+size_t const CANARY = 0XFACE'FACE'FACE'FACE;
 
-size_t const CANARY_SIZE = 2,
-             CANARY_NUM = 1;
-char const CANARY_PARTS[CANARY_SIZE] = {
-    (char)0XFA,
-    (char)0XCE,
-};
+stack_elem_t const BUFFER_CANARY = 0XFACE'FACE;
+
+size_t const STACK_EXPANSION          = 2; static_assert(STACK_EXPANSION > 1);
+size_t const STACK_REDUCTION_CRITERIA = 4; static_assert(STACK_REDUCTION_CRITERIA > 1);
+size_t const STACK_REDUCTION          = 2; static_assert(STACK_REDUCTION > 1 and
+                                                         STACK_REDUCTION <= STACK_REDUCTION_CRITERIA);
+size_t const STACK_MIN_CAPACITY       = 5; static_assert(STACK_MIN_CAPACITY > 0);
+
+uint64_t const STACK_START_HASH   = 68901; static_assert(STACK_START_HASH & 1);
+uint64_t const STACK_HASH_MLT     = 43;    static_assert(STACK_HASH_MLT & 1);
 
 struct My_stack {
-    char              canary_beg[CANARY_NUM][CANARY_SIZE];
+    size_t            beg_canary[CANARY_NUM];
 
+    ON_DEBUG(Var_info var_info;)
     size_t            size,
                       capacity;
     stack_elem_t      *buffer;
-    ON_DEBUG(Var_info var_info;)
+    ON_DEBUG(uint64_t hash_val;)
 
     bool              is_valid;
 
-    char              canary_end[CANARY_NUM][CANARY_SIZE];
+    size_t            end_canary[CANARY_NUM];
 };
+
+uint64_t My_stack_hash(My_stack const *stack_ptr);
 
 errno_t My_stack_Ctor(My_stack *stack_ptr, size_t start_capacity
                       ON_DEBUG(, Var_info var_info));
 
 #ifdef _DEBUG
-#define STACK_CREATE(name, start_capacity)                                                              \
-My_stack name = {};                                                                                     \
-CHECK_FUNC(My_stack_Ctor, &name, start_capacity,                                                        \
-           Var_info{Position_info{__FILE__, __func__, __LINE__}, #name})
+#define STACK_CREATE(name, start_capacity, handler)                                                              \
+My_stack name = {};                                                     \
+handler(My_stack_Ctor, &name, start_capacity,                           \
+        Var_info{Position_info{__FILE__, __func__, __LINE__}, #name})
 #else
 #define STACK_CREATE(name, start_capacity)          \
 My_stack name = {};                                 \
@@ -51,7 +65,7 @@ void My_stack_Dtor(My_stack *stack_ptr);
 #define STACK_SIZE_GREATER_THAN_CAPACITY 0B10000000000000
 #define STACK_NULL_BUFFER                0B100000000000000
 #define STACK_BUFFER_CANARY_SPOILED      0B1000000000000000
-#define STACK_BUFFER_SPOILED             0B10000000000000000 //TODO -
+#define STACK_HASH_UNMATCH               0B10000000000000000
 errno_t My_stack_verify(My_stack const *stack_ptr);
 
 #define STACK_DUMP(out_stream, name, error)                                             \
