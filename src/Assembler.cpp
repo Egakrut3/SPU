@@ -7,7 +7,7 @@ static size_t const BYTE_CODE_MAX_LEN   = 0X1000,
 static size_t const UNALIGN8_MASK = 0B111,
                     ALIGN8_MASK   = ~UNALIGN8_MASK;
 
-static size_t get_assembler_aligned(size_t const x) {
+size_t get_assembler_aligned(size_t const x) {
     return (x + UNALIGN8_MASK) & ALIGN8_MASK;
 }
 
@@ -31,19 +31,29 @@ errno_t make_byte_code(User_error *const error_ptr,
            text_cur_len < BYTE_CODE_MAX_LEN)) {
         if (fscanf_s(code_stream, "%s", cur_command, ASM_COMMAND_MAX_LEN + 1) != 1) {
             PRINT_LINE();
-            fprintf_s(stderr, "fscanf_s failed");
+            fprintf_s(stderr, "fscanf_s failed\n");
             CLEAR_RESOURCES();
             return ferror(code_stream);
         }
 
-        if (!strcmp(cur_command, "HLT")) {
+        if (!strcmp(cur_command, "HLT")) { //TODO - add comands
             byte_code[cur_len++] = HLT_COMMAND;
             ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
                                                BYTE_CODE_MAX_LEN - text_cur_len,
                                                "%hhX", HLT_COMMAND);)
 
-            fwrite(&cur_len, sizeof(size_t), 1, byte_code_stream);
-            fwrite(byte_code, sizeof(byte_elem_t), cur_len, byte_code_stream);
+            if (fwrite(&cur_len, sizeof(size_t), 1, byte_code_stream) != 1) {
+                PRINT_LINE();
+                fprintf_s(stderr, "fwrite failed\n");
+                CLEAR_RESOURCES();
+                return ferror(byte_code_stream);
+            }
+            if (fwrite(byte_code, sizeof(byte_elem_t), cur_len, byte_code_stream) != cur_len) {
+                PRINT_LINE();
+                fprintf_s(stderr, "fwrite failed\n");
+                CLEAR_RESOURCES();
+                return ferror(byte_code_stream);
+            }
             ON_DEBUG(fprintf_s(text_byte_code_stream, "%s", text_byte_code));
             CLEAR_RESOURCES();
             return construct_User_error(error_ptr, NO_ERROR, 0);

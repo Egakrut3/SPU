@@ -25,7 +25,9 @@ int main(int const argc, char const *const *const argv) {
 
     rewind(cur_config.output_stream);
     SPU_CREATE(cur_SPU, 5, cur_config.output_stream, MAIN_CHECK_FUNC);
-    SPU_DUMP(stderr, cur_SPU, ~0);
+
+    SPU_DUMP(stderr, &cur_SPU, 0);
+    MAIN_CHECK_FUNC(SPU_execute, &cur_SPU);
 
     colored_printf(GREEN, BLACK, "\n\n\nCOMMIT GITHUB\n\n");
     CLEAR_RESOURCES();

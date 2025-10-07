@@ -22,7 +22,7 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
         return ferror(byte_code_stream);
     }
     if (SPU_ptr->byte_code_len) {
-        byte_elem_t *const new_buffer = (byte_elem_t *)calloc(SPU_ptr->byte_code_len,
+        byte_elem_t *const new_buffer = (byte_elem_t *)calloc(SPU_ptr->byte_code_len, //is allignement guarranteed&
                                                               sizeof(byte_elem_t));
         if (!new_buffer) {
             PRINT_LINE();
@@ -178,7 +178,8 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     }
     fprintf_s(out_stream, "\t}\n");
 
-    fprintf_s(out_stream, "\tcur_command = %p\n", SPU_ptr->cur_command);
+    fprintf_s(out_stream, "\tcur_command = %p (index %tu)\n", SPU_ptr->cur_command,
+                                                              SPU_ptr->cur_command - SPU_ptr->byte_code);
     ON_DEBUG(fprintf_s(out_stream, "\thash_val = %llX, must be %llX\n", SPU_ptr->hash_val,
                                                                         SPU_hash(SPU_ptr)));
     fprintf_s(out_stream, "\tis_valid = %d\n", SPU_ptr->is_valid);

@@ -3,6 +3,7 @@
 
 #include "Common.h"
 #include "My_stack.h"
+#include "Assembler.h"
 
 #ifdef _DEBUG
 size_t const SPU_CANARY_NUM = 1;
@@ -20,8 +21,8 @@ struct SPU {
 
     My_stack          stack;
     ON_DEBUG(Var_info var_info;)
-    size_t            byte_code_len;
-    byte_elem_t       *byte_code,   //TODO - possible make canary
+    size_t            byte_code_len; //TODO - byte_code_len unused
+    byte_elem_t       *byte_code,    //TODO - possible make canary
                       *cur_command;
     ON_DEBUG(uint64_t hash_val;)
     stack_elem_t      regs[SPU_REGS_NUM];
@@ -33,7 +34,11 @@ struct SPU {
 
 uint64_t SPU_hash(SPU const *SPU_ptr);
 
-#define EMPTY_BYTE_CODE 1001
+#define EMPTY_BYTE_CODE                 1'001
+#define INCOMPLETE_ARGUMENT             1'002
+#define STACK_NOT_EMPTY_AFTER_EXECUTION 1'003
+#define UNKNOWN_COMMAND                 1'004
+#define NO_HLT_COMMAND                  1'005
 
 errno_t SPU_Ctor(SPU *SPU_ptr, size_t start_capacity, FILE *byte_code_stream
                  ON_DEBUG(, Var_info var_info));
@@ -63,8 +68,8 @@ void SPU_dump(FILE *out_stream, SPU const *SPU_ptr,
               Position_info from_where, errno_t err);
 
 #define SPU_DUMP(out_stream, name, error)                                           \
-SPU_dump(out_stream, &name, Position_info{__FILE__, __func__, __LINE__}, error)
+SPU_dump(out_stream, name, Position_info{__FILE__, __func__, __LINE__}, error)
 
-errno_t execute_byte_code(User_error *error_ptr, FILE *byte_code_stream);
+errno_t SPU_execute(SPU *SPU_ptr);
 
 #endif
