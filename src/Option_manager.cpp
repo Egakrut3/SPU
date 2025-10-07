@@ -23,8 +23,8 @@ static errno_t set_help_config(struct User_error *const error_ptr, struct Config
     printf("Usage: SPU.exe [options] file...\nOptions:\n"
            "\t%-10s %s\n""\t%-10s %s\n""\t%-10s %s\n",
            "--help", "Display the information about options",
-           "--in",   "Tells path to input-file by folowed parameter. If none is specified, stdin be used",
-           "--out",  "Tells path to output-file by folowed parameter. If none is specified, stdout be used"
+           "--in",   "Tells path to input-file by folowed parameter. If none is specified, Code.txt is used",
+           "--out",  "Tells path to output-file by folowed parameter. If none is specified, Byte_code is used"
            );
     CLEAR_RESOURCES();
     return construct_User_error(error_ptr, NO_ERROR, 0);
@@ -67,7 +67,7 @@ static errno_t set_out_config(struct User_error *const error_ptr, struct Config 
         return construct_User_error(error_ptr, NOT_ENOUGH_OPTION_ARGUMENTS, 1, "--out");
     }
 
-    CHECK_FUNC(fopen_s, &config_ptr->output_stream, **str_ptr, "w");
+    CHECK_FUNC(fopen_s, &config_ptr->output_stream, **str_ptr, "wb+");
     CLEAR_RESOURCES();
     return construct_User_error(error_ptr, NO_ERROR, 0);
 }
@@ -140,9 +140,10 @@ errno_t set_config(struct User_error *const error_ptr, struct Config *const conf
     }
 
     if (!used_options[OUT_OPTION]) {
-        CHECK_FUNC(fopen_s, &config_ptr->output_stream, "Byte_code.txt", "w");
+        CHECK_FUNC(fopen_s, &config_ptr->output_stream, "Byte_code", "wb+");
     }
 
+    ON_DEBUG(CHECK_FUNC(fopen_s, &config_ptr->text_output_stream, "Text_byte_code.txt", "w"));
     config_ptr->is_valid = true;
     CLEAR_RESOURCES();
     return construct_User_error(error_ptr, NO_ERROR, 0);

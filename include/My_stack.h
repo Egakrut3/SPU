@@ -3,18 +3,19 @@
 
 #include "Common.h"
 
-typedef int stack_elem_t;
-char const stack_elem_str[]   = "int",
-           stack_elem_frm[]   = "%d",
-           stack_canary_frm[] = "%#X";
+typedef double stack_elem_t;
+char const stack_elem_str[]   = "double",
+           stack_elem_frm[]   = "%lG",
+           stack_canary_frm[] = "%llX";
 #ifdef _DEBUG
-size_t const CANARY_NUM = 1;
+size_t const STACK_CANARY_NUM = 1;
 #else
-size_t const CANARY_NUM = 0;
+size_t const STACK_CANARY_NUM = 0;
 #endif
 size_t const CANARY = 0XFACE'FACE'FACE'FACE;
 
-stack_elem_t const BUFFER_CANARY = 0XFACE'FACE;
+uint64_t const BIT_BUFFER_CANARY = 0XFACE'FACE'FACE'FACE;
+stack_elem_t const BUFFER_CANARY = *(stack_elem_t const *)(&BIT_BUFFER_CANARY);
 
 size_t const STACK_EXPANSION          = 2; static_assert(STACK_EXPANSION > 1);
 size_t const STACK_REDUCTION_CRITERIA = 4; static_assert(STACK_REDUCTION_CRITERIA > 1);
@@ -26,7 +27,7 @@ uint64_t const STACK_START_HASH   = 68901; static_assert(STACK_START_HASH & 1);
 uint64_t const STACK_HASH_MLT     = 43;    static_assert(STACK_HASH_MLT & 1);
 
 struct My_stack {
-    size_t            beg_canary[CANARY_NUM];
+    size_t            beg_canary[STACK_CANARY_NUM];
 
     ON_DEBUG(Var_info var_info;)
     size_t            size,
@@ -36,7 +37,7 @@ struct My_stack {
 
     bool              is_valid;
 
-    size_t            end_canary[CANARY_NUM];
+    size_t            end_canary[STACK_CANARY_NUM];
 };
 
 uint64_t My_stack_hash(My_stack const *stack_ptr);

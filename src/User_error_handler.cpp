@@ -35,11 +35,12 @@ bool handle_User_error(struct User_error const *const error_ptr) {
             CLEAR_RESOURCES();
             return true;
 
-        case CODE_TOO_LONG:
+        case BYTE_CODE_TOO_LONG:
             assert(error_ptr->str_cnt == 0); assert(!error_ptr->data);
 
             colored_error_printf(RED, BLACK,
-                                 "Assembler code is too long or doesn't contain \"HLT\" operation\n");
+                                 "Assembler code until \"HLT\" command is too long or
+                                 doesn't contain it\n");
             CLEAR_RESOURCES();
             return true;
 
@@ -47,7 +48,7 @@ bool handle_User_error(struct User_error const *const error_ptr) {
         default:
             PRINT_LINE();
             abort();
-            CLEAR_RESOURCES(); //TODO - is it necessary?
+            CLEAR_RESOURCES();
             return true;
     }
 }

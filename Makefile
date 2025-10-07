@@ -22,7 +22,7 @@ CXX_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 
 TARGET = $(addprefix $(BIN_DIR), Assembler.exe)
 
-OBJ = Common Option_manager User_error_handler Assembler main
+OBJ = Common Option_manager User_error_handler Assembler SPU main
 
 make_object = $(call make_bin_path, $(1)) : $(call make_src_path, $(1)); \
 @$(CXX) $(CXX_FLAGS) -c $$< -I $(H_DIR) -o $$@
@@ -44,6 +44,8 @@ $(call make_object, Option_manager)
 $(call make_object, User_error_handler)
 
 $(call make_object, Assembler)
+
+$(call make_object, SPU)
 
 $(call make_object, main)
 

@@ -3,9 +3,11 @@
 
 #include "Common.h"
 
-size_t const MAX_BYTE_CODE_LEN = 5000;
+typedef double assembler_elem_t;
+char const assembler_elem_frm[] = "%lG";
 
 errno_t make_byte_code(User_error *error_ptr,
-                       FILE *code_stream, FILE *byte_code_stream);
+                       FILE *code_stream, FILE *byte_code_stream
+                       ON_DEBUG(, FILE *text_byte_code_stream));
 
 #endif

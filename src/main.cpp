@@ -1,8 +1,8 @@
 #include "Common.h"
-#include "My_stack.h"
 #include "Option_manager.h"
 #include "User_error_handler.h"
 #include "Assembler.h"
+#include "SPU.h"
 
 int main(int const argc, char const *const *const argv) {
     assert(argc > 0); assert(argv); assert(*argv);
@@ -20,6 +20,11 @@ int main(int const argc, char const *const *const argv) {
 
     destruct_User_error(&cur_error);
     MAIN_CHECK_FUNC(make_byte_code, &cur_error, cur_config.input_stream, cur_config.output_stream);
+    if (handle_User_error(&cur_error)) { CLEAR_RESOURCES(); return 0; }
+
+    destruct_User_error(&cur_error);
+    rewind(cur_config.output_stream);
+    MAIN_CHECK_FUNC(execute_byte_code, &cur_error, cur_config.output_stream);
     if (handle_User_error(&cur_error)) { CLEAR_RESOURCES(); return 0; }
 
     colored_printf(GREEN, BLACK, "\n\n\nCOMMIT GITHUB\n\n");

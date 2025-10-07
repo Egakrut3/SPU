@@ -1,81 +1,132 @@
 #include "Assembler.h"
 #include <string.h>
 
+static size_t const BYTE_CODE_MAX_LEN   = 0X1000,
+                    ASM_COMMAND_MAX_LEN = 5;
+
+static size_t const UNALIGN8_MASK = 0B111,
+                    ALIGN8_MASK   = ~UNALIGN8_MASK;
+
+static size_t get_assembler_aligned(size_t const x) {
+    return x + UNALIGN8_MASK & ALIGN8_MASK;
+}
+
 errno_t make_byte_code(User_error *const error_ptr,
-                       FILE *const code_stream, FILE *const byte_code_stream) {
-    assert(code_stream);
+                       FILE *const code_stream, FILE *const byte_code_stream
+                       ON_DEBUG(, FILE *const text_byte_code_stream)) {
+    assert(error_ptr); assert(!error_ptr->is_valid);
+    assert(code_stream); assert(byte_code_stream);
 
-    size_t cur_len = 0;
-    char *byte_code = (char *)calloc(MAX_BYTE_CODE_LEN, sizeof(char));
+    size_t     cur_len      = 0
+    ON_DEBUG(, text_cur_len = 0);
+    byte_elem_t    *byte_code      = (byte_elem_t *)calloc(BYTE_CODE_MAX_LEN, sizeof(byte_elem_t));
+    ON_DEBUG(char  *text_byte_code = (byte_elem_t *)calloc(BYTE_CODE_MAX_LEN + 1, sizeof(char));)
 #undef FINAL_CODE
-#define FINAL_CODE
+#define FINAL_CODE                      \
+    free(byte_code);                    \
+    ON_DEBUG(free(text_byte_code);)
 
-    char str[5] = {};
-    while (cur_len < MAX_BYTE_CODE_LEN) {
-        if (fscanf_s(code_stream, "%s", str, 5) != 1) {
+    char cur_command[ASM_COMMNAD_MAX_LEN + 1] = {};
+    while (cur_len      < BYTE_CODE_MAX_LEN ON_DEBUG(and
+           text_cur_len < BYTE_CODE_MAX_LEN)) {
+        if (fscanf_s(code_stream, "%s", cur_command, ASM_COMMAND_MAX_LEN + 1) != 1) {
             PRINT_LINE();
             fprintf_s(stderr, "fscanf_s failed");
             CLEAR_RESOURCES();
             return ferror(code_stream);
         }
 
-        if (!strcmp(str, "HLT")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu", 0);
-            fprintf_s(byte_code_stream, "%s", byte_code);
+        if (!strcmp(cur_command, "HLT")) {
+            byte_code[cur_len++] = HLT_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX", HLT_COMMAND);)
+
+            fwrite(byte_code, sizeof(byte_elem_t), cur_len, byte_code_stream); //TODO - possible write size
+            ON_DEBUG(fprintf_s(text_byte_code_stream, "%s", text_byte_code));
+            CLEAR_RESOURCES();
             return construct_User_error(error_ptr, NO_ERROR, 0);
         }
 
-        if (!strcmp(str, "PUSH")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu ", 1);
-            assembler_elem a = 0;
-            if (fscanf_s(code_stream, "%LG", &a) != 1) {
+        if (!strcmp(cur_command, "PUSH")) {
+            byte_code[cur_len++] = PUSH_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX ", PUSH_COMMAND);)
+
+            assembler_elem_t a = 0;
+            if (fscanf_s(code_stream, assembler_elem_frm, &a) != 1) {
                 PRINT_LINE();
                 fprintf_s(stderr, "fscanf_s failed");
                 CLEAR_RESOURCES();
                 return ferror(code_stream);
             }
 
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%LG\n", a);
+            cur_len = get_assembler_aligned(cur_len);
+            if (cur_len == BYTE_CODE_MAX_LEN) {
+                CLEAR_RESOURCES();
+                return construct_User_error(error_ptr, BYTE_CODE_TOO_LONG, 0);
+            }
+            *(assembler_elem_t *)(byte_code + cur_len) = a;
+            cur_len += sizeof(assembler_elem_t);
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               assembler_elem_frm, a);)
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "\n");)
             continue;
         }
 
-        if (!strcmp(str, "ADD")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu\n", 2);
+        if (!strcmp(cur_command, "ADD")) {
+            byte_code[cur_len++] = ADD_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX ", ADD_COMMAND);)
             continue;
         }
 
-        if (!strcmp(str, "SUB")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu\n", 3);
+        if (!strcmp(cur_command, "SUB")) {
+            byte_code[cur_len++] = SUB_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX ", SUB_COMMAND);)
             continue;
         }
 
-        if (!strcmp(str, "MLT")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu\n", 4);
+        if (!strcmp(cur_command, "MLT")) {
+            byte_code[cur_len++] = MLT_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX ", MLT_COMMAND);)
             continue;
         }
 
-        if (!strcmp(str, "DIV")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu\n", 5);
+        if (!strcmp(cur_command, "DIV")) {
+            byte_code[cur_len++] = DIV_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX ", DIV_COMMAND);)
             continue;
         }
 
-        if (!strcmp(str, "SQRT")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu\n", 6);
+        if (!strcmp(cur_command, "SQRT")) {
+            byte_code[cur_len++] = SQRT_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX ", SQRT_COMMAND);)
             continue;
         }
 
-        if (!strcmp(str, "POW")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu\n", 7);
+        if (!strcmp(cur_command, "POW")) {
+            byte_code[cur_len++] = POW_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX ", POW_COMMAND);)
             continue;
         }
 
-        if (!strcmp(str, "OUT")) {
-            cur_len += sprintf_s(byte_code + cur_len, MAX_BYTE_CODE_LEN - cur_len, "%hhu\n", 8);
+        if (!strcmp(cur_command, "OUT")) {
+            byte_code[cur_len++] = OUT_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + cur_len, BYTE_CODE_MAX_LEN - cur_len,
+                                               "%hhX ", OUT_COMMAND);)
             continue;
         }
 
-        return construct_User_error(error_ptr, UNKNOWN_OPERATION, 1, str);
+        CLEAR_RESOURCES();
+        return construct_User_error(error_ptr, UNKNOWN_OPERATION, 1, cur_command);
     }
 
-    return construct_User_error(error_ptr, CODE_TOO_LONG, 0);
+    CLEAR_RESOURCES();
+    return construct_User_error(error_ptr, BYTE_CODE_TOO_LONG, 0);
 }
