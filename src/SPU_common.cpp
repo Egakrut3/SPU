@@ -1,29 +1,30 @@
-#include "My_stack.h"
+#include "SPU.h"
 
-uint64_t My_stack_hash(My_stack const *const stack_ptr) {
-    assert(stack_ptr);
+uint64_t SPU_hash(SPU const *const SPU_ptr) {
+    assert(SPU_ptr);
 
-    uint64_t cur_hash = STACK_START_HASH;
+    uint64_t cur_hash = SPU_START_HASH;
 #undef FINAL_CODE
 #define FINAL_CODE
 
-    ON_DEBUG(cur_hash = cur_hash * STACK_HASH_MLT +
-                        (uint64_t)stack_ptr->var_info.position.file_name;)
-    ON_DEBUG(cur_hash = cur_hash * STACK_HASH_MLT +
-                        (uint64_t)stack_ptr->var_info.position.function_name;)
-    ON_DEBUG(cur_hash = cur_hash * STACK_HASH_MLT +
-                        stack_ptr->var_info.position.line;)
-    ON_DEBUG(cur_hash = cur_hash * STACK_HASH_MLT +
-                        (uint64_t)stack_ptr->var_info.name;)
+    cur_hash = cur_hash * SPU_HASH_MLT + My_stack_hash(SPU_ptr->stack);
 
-    cur_hash = cur_hash * STACK_HASH_MLT + stack_ptr->size;
-    cur_hash = cur_hash * STACK_HASH_MLT + stack_ptr->capacity;
-    cur_hash = cur_hash * STACK_HASH_MLT + (uint64_t)stack_ptr->buffer;
-    cur_hash = cur_hash * STACK_HASH_MLT + stack_ptr->is_valid;
+    ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
+                        (uint64_t)SPU_ptr->var_info.position.file_name;)
+    ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
+                        (uint64_t)SPU_ptr->var_info.position.function_name;)
+    ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
+                        SPU_ptr->var_info.position.line;)
+    ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
+                        (uint64_t)SPU_ptr->var_info.name;)
 
-    for (size_t i = 0; i < stack_ptr->size; ++i) {
-        cur_hash = cur_hash * STACK_HASH_MLT + *(uint64_t *)&stack_ptr->buffer[i];
+    cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->byte_code;
+    cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->cur_command;
+    cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->regs;
+    for (size_t i = 0; i < SPU_REGS_NUM; ++i) {
+        cur_hash = cur_hash * SPU_HASH_MLT + *(uint64_t *)&SPU_ptr->regs[i];
     }
+    cur_hash = cur_hash * SPU_HASH_MLT + stack_ptr->is_valid;
 
     CLEAR_RESOURCES();
     return cur_hash;

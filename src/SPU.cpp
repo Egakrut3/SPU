@@ -1,5 +1,4 @@
 #include "SPU.h"
-#include "My_stack.h"
 #include <math.h>
 
 errno_t execute_byte_code(User_error *const error_ptr, FILE *const byte_code_stream) {

@@ -56,6 +56,8 @@ struct Var_info {
     char const    *name;
 };
 
+size_t const CANARY = 0XFACE'FACE'FACE'FACE;
+
 enum User_error_code {
     NO_ERROR,                    ///< Code 0
     UNKNOWN_OPTION,              ///< Code 1
@@ -93,7 +95,7 @@ enum Asm_command_code : byte_elem_t {
     HLT_COMMAND,
     PUSH_COMMAND,
     ADD_COMMAND,
-    
+
 };
 
 #endif
