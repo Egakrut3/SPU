@@ -57,4 +57,4 @@ $(call make_object, SPU_functions)
 $(call make_object, main)
 
 clean:
-	@rm -rf bin
+	@rm -rf bin Byte_code
