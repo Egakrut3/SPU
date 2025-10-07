@@ -20,6 +20,7 @@ struct SPU {
 
     My_stack          stack;
     ON_DEBUG(Var_info var_info;)
+    size_t            byte_code_len;
     byte_elem_t       *byte_code,   //TODO - possible make canary
                       *cur_command;
     ON_DEBUG(uint64_t hash_val;)
@@ -31,6 +32,8 @@ struct SPU {
 };
 
 uint64_t SPU_hash(SPU const *SPU_ptr);
+
+#define EMPTY_BYTE_CODE 1001
 
 errno_t SPU_Ctor(SPU *SPU_ptr, size_t start_capacity, FILE *byte_code_stream
                  ON_DEBUG(, Var_info var_info));
@@ -48,14 +51,16 @@ handler(SPU_Ctor, &name, start_capacity, byte_code_stream)
 
 void SPU_Dtor(SPU *SPU_ptr);
 
-#define SPU_HASH_UNMATCH       0B100000000000000000
-#define SPU_CANARY_SPOILED     0B1000000000000000000
-#define SPU_INVALID            0B10000000000000000000
-#define STACK_NULL_BYTE_CODE   0B100000000000000000000
-#define STACK_NULL_CUR_COMMAND 0B100000000000000000000
+#define SPU_HASH_UNMATCH          0B100000000000000000
+#define SPU_CANARY_SPOILED        0B1000000000000000000
+#define SPU_INVALID               0B10000000000000000000
+#define SPU_NULL_BYTE_CODE_LEN    0B100000000000000000000
+#define STACK_NULL_BYTE_CODE      0B1000000000000000000000
+#define STACK_INVALID_CUR_COMMAND 0B10000000000000000000000
 errno_t SPU_verify(SPU const *SPU_ptr);
 
-void SPU_dump(FILE *out_stream, SPU const *SPU_ptr, Position_info from_where, errno_t err);
+void SPU_dump(FILE *out_stream, SPU const *SPU_ptr,
+              Position_info from_where, errno_t err);
 
 errno_t execute_byte_code(User_error *error_ptr, FILE *byte_code_stream);
 
