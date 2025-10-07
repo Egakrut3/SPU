@@ -41,7 +41,7 @@ errno_t SPU_Ctor(SPU *SPU_ptr, size_t start_capacity, FILE *byte_code_stream
 #ifdef _DEBUG
 #define SPU_CREATE(name, start_capacity, byte_code_stream, handler)     \
 SPU name = {};                                                          \
-handler(SPU_Ctor, &name, start_capacity, byte_code_stream               \
+handler(SPU_Ctor, &name, start_capacity, byte_code_stream,              \
         Var_info{Position_info{__FILE__, __func__, __LINE__}, #name})
 #else
 #define SPU_CREATE(name, start_capacity, byte_code_stream, handler)     \
@@ -61,6 +61,9 @@ errno_t SPU_verify(SPU const *SPU_ptr);
 
 void SPU_dump(FILE *out_stream, SPU const *SPU_ptr,
               Position_info from_where, errno_t err);
+
+#define SPU_DUMP(out_stream, name, error)                                           \
+SPU_dump(out_stream, &name, Position_info{__FILE__, __func__, __LINE__}, error)
 
 errno_t execute_byte_code(User_error *error_ptr, FILE *byte_code_stream);
 

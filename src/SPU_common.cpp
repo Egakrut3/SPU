@@ -7,7 +7,7 @@ uint64_t SPU_hash(SPU const *const SPU_ptr) {
 #undef FINAL_CODE
 #define FINAL_CODE
 
-    cur_hash = cur_hash * SPU_HASH_MLT + My_stack_hash(SPU_ptr->stack);
+    cur_hash = cur_hash * SPU_HASH_MLT + My_stack_hash(&SPU_ptr->stack);
 
     ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
                         (uint64_t)SPU_ptr->var_info.position.file_name;)
@@ -22,9 +22,9 @@ uint64_t SPU_hash(SPU const *const SPU_ptr) {
     cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->byte_code;
     cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->cur_command;
     for (size_t i = 0; i < SPU_REGS_NUM; ++i) {
-        cur_hash = cur_hash * SPU_HASH_MLT + *(uint64_t *)&SPU_ptr->regs[i];
+        cur_hash = cur_hash * SPU_HASH_MLT + *(const uint64_t *)&SPU_ptr->regs[i];
     }
-    cur_hash = cur_hash * SPU_HASH_MLT + stack_ptr->is_valid;
+    cur_hash = cur_hash * SPU_HASH_MLT + SPU_ptr->is_valid;
 
     CLEAR_RESOURCES();
     return cur_hash;

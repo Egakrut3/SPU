@@ -95,7 +95,12 @@ enum Asm_command_code : byte_elem_t {
     HLT_COMMAND,
     PUSH_COMMAND,
     ADD_COMMAND,
-
+    SUB_COMMAND,
+    MLT_COMMAND,
+    DIV_COMMAND,
+    SQRT_COMMAND,
+    POW_COMMAND,
+    OUT_COMMAND,
 };
 
 #endif

@@ -19,13 +19,13 @@ int main(int const argc, char const *const *const argv) {
     if (cur_config.is_help)            { CLEAR_RESOURCES(); return 0; }
 
     destruct_User_error(&cur_error);
-    MAIN_CHECK_FUNC(make_byte_code, &cur_error, cur_config.input_stream, cur_config.output_stream);
+    MAIN_CHECK_FUNC(make_byte_code, &cur_error, cur_config.input_stream, cur_config.output_stream
+                                    ON_DEBUG(, cur_config.text_output_stream));
     if (handle_User_error(&cur_error)) { CLEAR_RESOURCES(); return 0; }
 
-    destruct_User_error(&cur_error);
     rewind(cur_config.output_stream);
-    MAIN_CHECK_FUNC(execute_byte_code, &cur_error, cur_config.output_stream);
-    if (handle_User_error(&cur_error)) { CLEAR_RESOURCES(); return 0; }
+    SPU_CREATE(cur_SPU, 5, cur_config.output_stream, MAIN_CHECK_FUNC);
+    SPU_DUMP(stderr, cur_SPU, ~0);
 
     colored_printf(GREEN, BLACK, "\n\n\nCOMMIT GITHUB\n\n");
     CLEAR_RESOURCES();

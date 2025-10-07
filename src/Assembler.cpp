@@ -8,7 +8,7 @@ static size_t const UNALIGN8_MASK = 0B111,
                     ALIGN8_MASK   = ~UNALIGN8_MASK;
 
 static size_t get_assembler_aligned(size_t const x) {
-    return x + UNALIGN8_MASK & ALIGN8_MASK;
+    return (x + UNALIGN8_MASK) & ALIGN8_MASK;
 }
 
 errno_t make_byte_code(User_error *const error_ptr,
@@ -20,13 +20,13 @@ errno_t make_byte_code(User_error *const error_ptr,
     size_t     cur_len      = 0
     ON_DEBUG(, text_cur_len = 0);
     byte_elem_t    *byte_code      = (byte_elem_t *)calloc(BYTE_CODE_MAX_LEN, sizeof(byte_elem_t));
-    ON_DEBUG(char  *text_byte_code = (byte_elem_t *)calloc(BYTE_CODE_MAX_LEN + 1, sizeof(char));)
+    ON_DEBUG(char  *text_byte_code = (char *)calloc(BYTE_CODE_MAX_LEN + 1, sizeof(char));)
 #undef FINAL_CODE
 #define FINAL_CODE                      \
     free(byte_code);                    \
     ON_DEBUG(free(text_byte_code);)
 
-    char cur_command[ASM_COMMNAD_MAX_LEN + 1] = {};
+    char cur_command[ASM_COMMAND_MAX_LEN + 1] = {};
     while (cur_len      < BYTE_CODE_MAX_LEN ON_DEBUG(and
            text_cur_len < BYTE_CODE_MAX_LEN)) {
         if (fscanf_s(code_stream, "%s", cur_command, ASM_COMMAND_MAX_LEN + 1) != 1) {

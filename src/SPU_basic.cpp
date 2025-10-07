@@ -12,10 +12,10 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
         SPU_ptr->beg_canary[i] = CANARY;
     }
 
-    CHECK_FUNC(My_stack_Ctor(SPU_ptr->stack, start_capacity, var_info));
+    CHECK_FUNC(My_stack_Ctor, &SPU_ptr->stack, start_capacity, var_info);
     ON_DEBUG(SPU_ptr->var_info   = var_info;)
 
-    if (fread(SPU_ptr->byte_code_len, sizeof(SPU_ptr->byte_code_len), 1, byte_code_stream) != 1) {
+    if (fread(&SPU_ptr->byte_code_len, sizeof(SPU_ptr->byte_code_len), 1, byte_code_stream) != 1) {
         PRINT_LINE();
         fprintf_s(stderr, "fread failed\n");
         CLEAR_RESOURCES();
@@ -65,9 +65,9 @@ void SPU_Dtor(SPU *const SPU_ptr) {
 #undef FINAL_CODE
 #define FINAL_CODE
 
-    My_stack_Dtor(SPU_ptr->stack);
+    My_stack_Dtor(&SPU_ptr->stack);
     free(SPU_ptr->byte_code);
-    stack_ptr->is_valid = false;
+    SPU_ptr->is_valid = false;
 
     CLEAR_RESOURCES();
 }
@@ -79,7 +79,7 @@ errno_t SPU_verify(SPU const *const SPU_ptr) {
 #undef FINAL_CODE
 #define FINAL_CODE
 
-    err |= My_stack_verify(SPU_ptr->stack);
+    err |= My_stack_verify(&SPU_ptr->stack);
 
     if (SPU_ptr->hash_val != SPU_hash(SPU_ptr)) {
         err |= SPU_HASH_UNMATCH;
@@ -116,12 +116,39 @@ errno_t SPU_verify(SPU const *const SPU_ptr) {
 
 void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
               Position_info const from_where, errno_t const err) {
-    assert(out_stream); assert(stack_ptr);
-    ON_DEBUG(assert(stack_ptr->var_info.name); assert(stack_ptr->var_info.position.file_name);)
+    assert(out_stream); assert(SPU_ptr);
+    ON_DEBUG(assert(SPU_ptr->var_info.name); assert(SPU_ptr->var_info.position.file_name);)
     assert(from_where.file_name);
 
 #undef FINAL_CODE
 #define FINAL_CODE
+
+    fprintf_s(out_stream, "called at file %s, line %d in \"%s\" function: ",
+              from_where.file_name, from_where.line, from_where.function_name);
+
+    if (err & SPU_HASH_UNMATCH) {
+        fprintf_s(out_stream, "SPU hash unmatch    ");
+    }
+
+    if (err & SPU_CANARY_SPOILED) {
+        fprintf_s(out_stream, "SPU canary spoiled    ");
+    }
+
+    if (err & SPU_INVALID) {
+        fprintf_s(out_stream, "SPU invalid    ");
+    }
+
+    if (err & SPU_NULL_BYTE_CODE_LEN) {
+        fprintf_s(out_stream, "SPU has null byte_code_len    ");
+    }
+
+    if (err & STACK_NULL_BYTE_CODE) {
+        fprintf_s(out_stream, "SPU has null byte_code    ");
+    }
+
+    if (err & STACK_INVALID_CUR_COMMAND) {
+        fprintf_s(out_stream, "SPU has invalid cur_command    ");
+    }
 
     fprintf_s(out_stream, "\nSPU[%p]"
               ON_DEBUG(" \"%s\" declared in file %s, line %zu in \"%s\" function")
@@ -137,7 +164,7 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     }
     fprintf_s(out_stream, "\t}\n");
 
-    My_stack_dump(out_stream, SPU_ptr->stack, from_where, err); //TODO - I can't add tabulation there and mute comments
+    My_stack_dump(out_stream, &SPU_ptr->stack, from_where, err); //TODO - I can't add tabulation there and mute comments
 
     fprintf_s(out_stream, "\tbyte_code_len = %zu\n", SPU_ptr->byte_code_len);
 
@@ -158,5 +185,6 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     }
     fprintf_s(out_stream, "\t}\n");
 
+    fprintf_s(out_stream, "}\n");
     CLEAR_RESOURCES();
 }
