@@ -169,8 +169,12 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     fprintf_s(out_stream, "\tbyte_code_len = %zu\n", SPU_ptr->byte_code_len);
 
     fprintf_s(out_stream, "\tbyte_code[%zu] = [%p] {\n", SPU_ptr->byte_code_len, SPU_ptr->byte_code);
-    for (size_t i = 0; i < SPU_ptr->byte_code_len; ++i) {
-        fprintf_s(out_stream, "\t\t[%zu] = %hhX\n", i, SPU_ptr->byte_code[i]);
+    for (size_t i = 0; i < SPU_ptr->byte_code_len; i += sizeof(stack_elem_t)) {
+        fprintf_s(out_stream, "\t\t");
+        for (size_t j = i; j < i + 8 and j < SPU_ptr->byte_code_len; ++j) {
+            fprintf_s(out_stream, "[%zu] = %hhX ", j, SPU_ptr->byte_code[j]);
+        }
+        fprintf_s(out_stream, "\n");
     }
     fprintf_s(out_stream, "\t}\n");
 

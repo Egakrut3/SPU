@@ -76,5 +76,6 @@ void destruct_Config(struct Config *const config_ptr) {
     config_ptr->is_valid = false;
     fclose(config_ptr->input_stream);
     fclose(config_ptr->output_stream);
+    ON_DEBUG(fclose(config_ptr->text_output_stream));
     CLEAR_RESOURCES();
 }
