@@ -11,10 +11,8 @@ size_t get_assembler_aligned(size_t const x) {
     return (x + UNALIGN8_MASK) & ALIGN8_MASK;
 }
 
-errno_t make_byte_code(User_error *const error_ptr,
-                       FILE *const code_stream, FILE *const byte_code_stream
+errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                        ON_DEBUG(, FILE *const text_byte_code_stream)) {
-    assert(error_ptr); assert(!error_ptr->is_valid);
     assert(code_stream); assert(byte_code_stream);
 
     size_t     cur_len      = 0
@@ -29,6 +27,7 @@ errno_t make_byte_code(User_error *const error_ptr,
     char cur_command[ASM_COMMAND_MAX_LEN + 1] = {};
     while (cur_len      < BYTE_CODE_MAX_LEN ON_DEBUG(and
            text_cur_len < BYTE_CODE_MAX_LEN)) {
+        fprintf_s(stderr, "cur_len = %zu\n", cur_len);
         if (fscanf_s(code_stream, "%s", cur_command, ASM_COMMAND_MAX_LEN + 1) != 1) {
             PRINT_LINE();
             fprintf_s(stderr, "fscanf_s failed\n");
@@ -36,7 +35,7 @@ errno_t make_byte_code(User_error *const error_ptr,
             return ferror(code_stream);
         }
 
-        if (!strcmp(cur_command, "HLT")) { //TODO - add comands
+        if (!strcmp(cur_command, "HLT")) {
             byte_code[cur_len++] = HLT_COMMAND;
             ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
                                                BYTE_CODE_MAX_LEN - text_cur_len,
@@ -56,7 +55,7 @@ errno_t make_byte_code(User_error *const error_ptr,
             }
             ON_DEBUG(fprintf_s(text_byte_code_stream, "%s", text_byte_code));
             CLEAR_RESOURCES();
-            return construct_User_error(error_ptr, NO_ERROR, 0);
+            return 0;
         }
 
         if (!strcmp(cur_command, "PUSH")) {
@@ -76,7 +75,7 @@ errno_t make_byte_code(User_error *const error_ptr,
             cur_len = get_assembler_aligned(cur_len);
             if (cur_len == BYTE_CODE_MAX_LEN) {
                 CLEAR_RESOURCES();
-                return construct_User_error(error_ptr, BYTE_CODE_TOO_LONG, 0);
+                return BYTE_CODE_TOO_LONG;
             }
             *(assembler_elem_t *)(byte_code + cur_len) = a;
             cur_len += sizeof(assembler_elem_t);
@@ -87,6 +86,76 @@ errno_t make_byte_code(User_error *const error_ptr,
                                                BYTE_CODE_MAX_LEN - text_cur_len,
                                                "\n");)
             continue;
+        }
+
+        if (!strcmp(cur_command, "PUSHR")) {
+            byte_code[cur_len++] = PUSHR_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
+                                               BYTE_CODE_MAX_LEN - text_cur_len,
+                                               "%hhX ", PUSHR_COMMAND);)
+
+            byte_elem_t reg = 0;
+            if (fscanf_s(code_stream, " r%hhu", &reg) != 1) {
+                PRINT_LINE();
+                fprintf_s(stderr, "fscanf_s failed");
+                CLEAR_RESOURCES();
+                return ferror(code_stream);
+            }
+
+            if (cur_len == BYTE_CODE_MAX_LEN) {
+                CLEAR_RESOURCES();
+                return BYTE_CODE_TOO_LONG;
+            }
+
+            if (reg < SPU_REGS_NUM) {
+                byte_code[cur_len++] = reg;
+                ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
+                                                   BYTE_CODE_MAX_LEN - text_cur_len,
+                                                   "%hhX\n", reg);)
+                continue;
+            }
+            else {
+                return INVALID_REGISTER;
+            }
+        }
+
+        if (!strcmp(cur_command, "POP")) {
+            byte_code[cur_len++] = POP_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
+                                               BYTE_CODE_MAX_LEN - text_cur_len,
+                                               "%hhX ", POP_COMMAND);)
+            continue;
+        }
+
+        if (!strcmp(cur_command, "POPR")) {
+            byte_code[cur_len++] = POPR_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
+                                               BYTE_CODE_MAX_LEN - text_cur_len,
+                                               "%hhX ", POPR_COMMAND);)
+
+            byte_elem_t reg = 0;
+            if (fscanf_s(code_stream, " r%hhu", &reg) != 1) {
+                PRINT_LINE();
+                fprintf_s(stderr, "fscanf_s failed\n");
+                CLEAR_RESOURCES();
+                return ferror(code_stream);
+            }
+
+            if (cur_len == BYTE_CODE_MAX_LEN) {
+                CLEAR_RESOURCES();
+                return BYTE_CODE_TOO_LONG;
+            }
+
+            if (reg < SPU_REGS_NUM) {
+                byte_code[cur_len++] = reg;
+                ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
+                                                   BYTE_CODE_MAX_LEN - text_cur_len,
+                                                   "%hhX\n", reg);)
+                continue;
+            }
+            else {
+                return INVALID_REGISTER;
+            }
         }
 
         if (!strcmp(cur_command, "ADD")) {
@@ -137,6 +206,14 @@ errno_t make_byte_code(User_error *const error_ptr,
             continue;
         }
 
+        if (!strcmp(cur_command, "IN")) {
+            byte_code[cur_len++] = IN_COMMAND;
+            ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
+                                               BYTE_CODE_MAX_LEN - text_cur_len,
+                                               "%hhX\n", IN_COMMAND);)
+            continue;
+        }
+
         if (!strcmp(cur_command, "OUT")) {
             byte_code[cur_len++] = OUT_COMMAND;
             ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
@@ -146,9 +223,9 @@ errno_t make_byte_code(User_error *const error_ptr,
         }
 
         CLEAR_RESOURCES();
-        return construct_User_error(error_ptr, UNKNOWN_OPERATION, 1, cur_command);
+        return UNKNOWN_ASM_COMMAND;
     }
 
     CLEAR_RESOURCES();
-    return construct_User_error(error_ptr, BYTE_CODE_TOO_LONG, 0);
+    return BYTE_CODE_TOO_LONG;
 }

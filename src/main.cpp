@@ -3,6 +3,7 @@
 #include "User_error_handler.h"
 #include "Assembler.h"
 #include "SPU.h"
+//TODO - make functions for each command
 
 int main(int const argc, char const *const *const argv) {
     assert(argc > 0); assert(argv); assert(*argv);
@@ -18,10 +19,8 @@ int main(int const argc, char const *const *const argv) {
     if (handle_User_error(&cur_error)) { CLEAR_RESOURCES(); return 0; }
     if (cur_config.is_help)            { CLEAR_RESOURCES(); return 0; }
 
-    destruct_User_error(&cur_error);
-    MAIN_CHECK_FUNC(make_byte_code, &cur_error, cur_config.input_stream, cur_config.output_stream
+    MAIN_CHECK_FUNC(make_byte_code, cur_config.input_stream, cur_config.output_stream
                                     ON_DEBUG(, cur_config.text_output_stream));
-    if (handle_User_error(&cur_error)) { CLEAR_RESOURCES(); return 0; }
 
     rewind(cur_config.output_stream);
     SPU_CREATE(cur_SPU, 5, cur_config.output_stream, MAIN_CHECK_FUNC);

@@ -62,9 +62,7 @@ enum User_error_code {
     NO_ERROR,                    ///< Code 0
     UNKNOWN_OPTION,              ///< Code 1
     NOT_ENOUGH_OPTION_ARGUMENTS, ///< Code 2
-    UNKNOWN_OPERATION,           ///< Code 3
-    BYTE_CODE_TOO_LONG,               ///< Code 4
-    __INVALID_ERROR,             ///< Code 5
+    __INVALID_ERROR,             ///< Code 3
 };
 
 struct User_error {
@@ -94,12 +92,16 @@ void destruct_Config(struct Config *config_ptr);
 enum Asm_command_code : byte_elem_t {
     HLT_COMMAND,
     PUSH_COMMAND,
+    PUSHR_COMMAND,
+    POP_COMMAND,
+    POPR_COMMAND,
     ADD_COMMAND,
     SUB_COMMAND,
     MLT_COMMAND,
     DIV_COMMAND,
     SQRT_COMMAND,
     POW_COMMAND,
+    IN_COMMAND,
     OUT_COMMAND,
 };
 
