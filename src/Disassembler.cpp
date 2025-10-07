@@ -69,10 +69,7 @@ errno_t disassembly_byte_code(FILE *byte_code_stream, FILE *code_stream) {
                     IC += sizeof(stack_elem_t) - 1;
                     break;
                 }
-                else {
-                    CLEAR_RESOURCES();
-                    return INCOMPLETE_ARGUMENT;
-                }
+                else { CLEAR_RESOURCES(); return INCOMPLETE_ARGUMENT; }
 
             case PUSHR_COMMAND:
                 ++IC;
@@ -81,10 +78,7 @@ errno_t disassembly_byte_code(FILE *byte_code_stream, FILE *code_stream) {
                     cur_len += sprintf_s(code + cur_len, CODE_MAX_LEN - cur_len, "PUSHR r%hhu\n", reg1);
                     break;
                 }
-                else {
-                    CLEAR_RESOURCES();
-                    return INCOMPLETE_ARGUMENT;
-                }
+                else { CLEAR_RESOURCES(); return INCOMPLETE_ARGUMENT; }
 
             case POP_COMMAND:
                 cur_len += sprintf_s(code + cur_len, CODE_MAX_LEN - cur_len, "POP\n");
@@ -97,10 +91,7 @@ errno_t disassembly_byte_code(FILE *byte_code_stream, FILE *code_stream) {
                     cur_len += sprintf_s(code + cur_len, CODE_MAX_LEN - cur_len, "POPR r%hhu\n", reg1);
                     break;
                 }
-                else {
-                    CLEAR_RESOURCES();
-                    return INCOMPLETE_ARGUMENT;
-                }
+                else { CLEAR_RESOURCES(); return INCOMPLETE_ARGUMENT; }
 
             case ADD_COMMAND:
                 cur_len += sprintf_s(code + cur_len, CODE_MAX_LEN - cur_len, "ADD\n");
@@ -141,11 +132,7 @@ errno_t disassembly_byte_code(FILE *byte_code_stream, FILE *code_stream) {
                     cur_len += sprintf_s(code + cur_len, CODE_MAX_LEN - cur_len, "JMP %hhu\n", pos);
                     break;
                 }
-                else {
-                    CLEAR_RESOURCES();
-                    return INCOMPLETE_ARGUMENT;
-                }
-                break;
+                else { CLEAR_RESOURCES(); return INCOMPLETE_ARGUMENT; }
 
             default:
                 CLEAR_RESOURCES();

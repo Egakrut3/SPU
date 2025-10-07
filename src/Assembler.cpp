@@ -86,10 +86,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
             }
 
             cur_len = get_assembler_aligned(cur_len);
-            if (cur_len == BYTE_CODE_MAX_LEN) {
-                CLEAR_RESOURCES();
-                return BYTE_CODE_TOO_LONG;
-            }
+            if (cur_len == BYTE_CODE_MAX_LEN) { CLEAR_RESOURCES(); return BYTE_CODE_TOO_LONG; }
             *(assembler_elem_t *)(byte_code + cur_len) = a;
             cur_len += sizeof(assembler_elem_t);
             ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
@@ -115,10 +112,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                 return ferror(code_stream);
             }
 
-            if (cur_len == BYTE_CODE_MAX_LEN) {
-                CLEAR_RESOURCES();
-                return BYTE_CODE_TOO_LONG;
-            }
+            if (cur_len == BYTE_CODE_MAX_LEN) { CLEAR_RESOURCES(); return BYTE_CODE_TOO_LONG; }
 
             if (reg < SPU_REGS_NUM) {
                 byte_code[cur_len++] = reg;
@@ -127,9 +121,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                                                    "%hhX\n", reg);)
                 continue;
             }
-            else {
-                return INVALID_REGISTER;
-            }
+            else { return INVALID_REGISTER; }
         }
 
         if (!strcmp(cur_command, "POP")) {
@@ -154,10 +146,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                 return ferror(code_stream);
             }
 
-            if (cur_len == BYTE_CODE_MAX_LEN) {
-                CLEAR_RESOURCES();
-                return BYTE_CODE_TOO_LONG;
-            }
+            if (cur_len == BYTE_CODE_MAX_LEN) { CLEAR_RESOURCES(); return BYTE_CODE_TOO_LONG; }
 
             if (reg < SPU_REGS_NUM) {
                 byte_code[cur_len++] = reg;
@@ -166,9 +155,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                                                    "%hhX\n", reg);)
                 continue;
             }
-            else {
-                return INVALID_REGISTER;
-            }
+            else { return INVALID_REGISTER; }
         }
 
         if (!strcmp(cur_command, "ADD")) {
@@ -249,10 +236,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                 return ferror(code_stream);
             }
 
-            if (cur_len == BYTE_CODE_MAX_LEN) {
-                CLEAR_RESOURCES();
-                return BYTE_CODE_TOO_LONG;
-            }
+            if (cur_len == BYTE_CODE_MAX_LEN) { CLEAR_RESOURCES(); return BYTE_CODE_TOO_LONG; }
 
             byte_code[cur_len++] = pos;
             ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
@@ -275,10 +259,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                 return ferror(code_stream);
             }
 
-            if (cur_len == BYTE_CODE_MAX_LEN) {
-                CLEAR_RESOURCES();
-                return BYTE_CODE_TOO_LONG;
-            }
+            if (cur_len == BYTE_CODE_MAX_LEN) { CLEAR_RESOURCES(); return BYTE_CODE_TOO_LONG; }
 
             byte_code[cur_len++] = pos;
             ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
@@ -301,10 +282,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                 return ferror(code_stream);
             }
 
-            if (cur_len == BYTE_CODE_MAX_LEN) {
-                CLEAR_RESOURCES();
-                return BYTE_CODE_TOO_LONG;
-            }
+            if (cur_len == BYTE_CODE_MAX_LEN) { CLEAR_RESOURCES(); return BYTE_CODE_TOO_LONG; }
 
             byte_code[cur_len++] = pos;
             ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,
@@ -327,10 +305,7 @@ errno_t make_byte_code(FILE *const code_stream, FILE *const byte_code_stream
                 return ferror(code_stream);
             }
 
-            if (cur_len == BYTE_CODE_MAX_LEN) {
-                CLEAR_RESOURCES();
-                return BYTE_CODE_TOO_LONG;
-            }
+            if (cur_len == BYTE_CODE_MAX_LEN) { CLEAR_RESOURCES(); return BYTE_CODE_TOO_LONG; }
 
             byte_code[cur_len++] = pos;
             ON_DEBUG(text_cur_len += sprintf_s(text_byte_code + text_cur_len,

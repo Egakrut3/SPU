@@ -32,10 +32,7 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                     IC += sizeof(stack_elem_t) - 1;
                     break;
                 }
-                else {
-                    CLEAR_RESOURCES();
-                    return INCOMPLETE_ARGUMENT;
-                }
+                else { CLEAR_RESOURCES(); return INCOMPLETE_ARGUMENT; }
 
             case PUSHR_COMMAND:
                 ++IC;
@@ -45,10 +42,7 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, SPU_ptr->regs[reg1]);
                     break;
                 }
-                else {
-                    CLEAR_RESOURCES();
-                    return INCOMPLETE_ARGUMENT;
-                }
+                else { CLEAR_RESOURCES(); return INCOMPLETE_ARGUMENT; }
 
             case POP_COMMAND:
                 fprintf_s(stderr, "Trying to POP\n");
@@ -63,10 +57,7 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &SPU_ptr->regs[reg1]);
                     break;
                 }
-                else {
-                    CLEAR_RESOURCES();
-                    return INCOMPLETE_ARGUMENT;
-                }
+                else { CLEAR_RESOURCES(); return INCOMPLETE_ARGUMENT; }
 
             case ADD_COMMAND:
                 CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &op2);

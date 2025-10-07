@@ -80,9 +80,7 @@ errno_t SPU_verify(SPU const *const SPU_ptr) {
 
     err |= My_stack_verify(&SPU_ptr->stack);
 
-    if (SPU_ptr->hash_val != SPU_hash(SPU_ptr)) {
-        err |= SPU_HASH_UNMATCH;
-    }
+    if (SPU_ptr->hash_val != SPU_hash(SPU_ptr)) { err |= SPU_HASH_UNMATCH; }
 
     for (size_t i = 0; i < SPU_CANARY_NUM; ++i) {
         if (SPU_ptr->beg_canary[i] != CANARY or
@@ -92,17 +90,9 @@ errno_t SPU_verify(SPU const *const SPU_ptr) {
         }
     }
 
-    if (!SPU_ptr->is_valid) {
-        err |= SPU_INVALID;
-    }
-
-    if (!SPU_ptr->byte_code_len) {
-        err |= SPU_NULL_BYTE_CODE_LEN;
-    }
-
-    if (!SPU_ptr->byte_code) {
-        err |= STACK_NULL_BYTE_CODE;
-    }
+    if (!SPU_ptr->is_valid)      { err |= SPU_INVALID; }
+    if (!SPU_ptr->byte_code_len) { err |= SPU_NULL_BYTE_CODE_LEN; }
+    if (!SPU_ptr->byte_code)     { err |= STACK_NULL_BYTE_CODE; }
 
     CLEAR_RESOURCES();
     return err;
@@ -120,25 +110,11 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     fprintf_s(out_stream, "called at file %s, line %d in \"%s\" function: ",
               from_where.file_name, from_where.line, from_where.function_name);
 
-    if (err & SPU_HASH_UNMATCH) {
-        fprintf_s(out_stream, "SPU hash unmatch    ");
-    }
-
-    if (err & SPU_CANARY_SPOILED) {
-        fprintf_s(out_stream, "SPU canary spoiled    ");
-    }
-
-    if (err & SPU_INVALID) {
-        fprintf_s(out_stream, "SPU invalid    ");
-    }
-
-    if (err & SPU_NULL_BYTE_CODE_LEN) {
-        fprintf_s(out_stream, "SPU has null byte_code_len    ");
-    }
-
-    if (err & STACK_NULL_BYTE_CODE) {
-        fprintf_s(out_stream, "SPU has null byte_code    ");
-    }
+    if (err & SPU_HASH_UNMATCH)       { fprintf_s(out_stream, "SPU hash unmatch    "); }
+    if (err & SPU_CANARY_SPOILED)     { fprintf_s(out_stream, "SPU canary spoiled    "); }
+    if (err & SPU_INVALID)            { fprintf_s(out_stream, "SPU invalid    "); }
+    if (err & SPU_NULL_BYTE_CODE_LEN) { fprintf_s(out_stream, "SPU has null byte_code_len    "); }
+    if (err & STACK_NULL_BYTE_CODE)   { fprintf_s(out_stream, "SPU has null byte_code    "); }
 
     fprintf_s(out_stream, "\nSPU[%p]"
               ON_DEBUG(" \"%s\" declared in file %s, line %zu in \"%s\" function")
