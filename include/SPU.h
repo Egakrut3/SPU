@@ -21,9 +21,8 @@ struct SPU {
 
     My_stack          stack;
     ON_DEBUG(Var_info var_info;)
-    size_t            byte_code_len; //TODO - byte_code_len unused
-    byte_elem_t       *byte_code,    //TODO - possible make canary
-                      *cur_command;
+    size_t            byte_code_len;
+    byte_elem_t       *byte_code;    //TODO - possible make canary
     ON_DEBUG(uint64_t hash_val;)
     stack_elem_t      regs[SPU_REGS_NUM];
 
@@ -61,7 +60,6 @@ void SPU_Dtor(SPU *SPU_ptr);
 #define SPU_INVALID               0B10000000000000000000
 #define SPU_NULL_BYTE_CODE_LEN    0B100000000000000000000
 #define STACK_NULL_BYTE_CODE      0B1000000000000000000000
-#define STACK_INVALID_CUR_COMMAND 0B10000000000000000000000
 errno_t SPU_verify(SPU const *SPU_ptr);
 
 void SPU_dump(FILE *out_stream, SPU const *SPU_ptr,

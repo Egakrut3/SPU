@@ -20,7 +20,6 @@ uint64_t SPU_hash(SPU const *const SPU_ptr) {
 
     cur_hash = cur_hash * SPU_HASH_MLT + SPU_ptr->byte_code_len;
     cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->byte_code;
-    cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->cur_command;
     for (size_t i = 0; i < SPU_REGS_NUM; ++i) {
         cur_hash = cur_hash * SPU_HASH_MLT + *(const uint64_t *)&SPU_ptr->regs[i];
     }

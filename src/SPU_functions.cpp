@@ -4,16 +4,17 @@
 errno_t SPU_execute(SPU *const SPU_ptr) {
     assert(SPU_ptr);
 
-
     stack_elem_t op1 = {},
                  op2 = {};
     byte_elem_t reg1 = {};
 #undef FINAL_CODE
 #define FINAL_CODE
 
-    for (size_t i = 0; i < SPU_ptr->byte_code_len; ++i) {
-        //fprintf_s(stderr, "i = %zu\n", i);
-        switch (SPU_ptr->byte_code[i]) {
+    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr));
+
+    for (size_t IC = 0; IC < SPU_ptr->byte_code_len; ++IC) {
+        //fprintf_s(stderr, "IC = %zu\n", IC);
+        switch (SPU_ptr->byte_code[IC]) {
             case HLT_COMMAND:
                 CLEAR_RESOURCES();
                 fprintf_s(stderr, "Finishing execution\n");
@@ -21,14 +22,14 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                 else { return 0; }
 
             case PUSH_COMMAND:
-                i = get_assembler_aligned(i + 1);
-                if (i < SPU_ptr->byte_code_len) {
-                    op1 = *(stack_elem_t *)(SPU_ptr->byte_code + i);
+                IC = get_assembler_aligned(IC + 1);
+                if (IC < SPU_ptr->byte_code_len) {
+                    op1 = *(stack_elem_t *)(SPU_ptr->byte_code + IC);
                     fprintf_s(stderr, "Trying to PUSH ");
                     fprintf_s(stderr, stack_elem_frm, op1);
                     fprintf_s(stderr, "\n");
                     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, op1);
-                    i += 7;
+                    IC += sizeof(stack_elem_t) - 1;
                     break;
                 }
                 else {
@@ -37,9 +38,9 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                 }
 
             case PUSHR_COMMAND:
-                ++i;
-                if (i < SPU_ptr->byte_code_len) {
-                    reg1 = SPU_ptr->byte_code[i];
+                ++IC;
+                if (IC < SPU_ptr->byte_code_len) {
+                    reg1 = SPU_ptr->byte_code[IC];
                     fprintf_s(stderr, "Trying to PUSHR %hhX\n", reg1);
                     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, SPU_ptr->regs[reg1]);
                     break;
@@ -55,9 +56,9 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                 break;
 
             case POPR_COMMAND:
-                ++i;
-                if (i < SPU_ptr->byte_code_len) {
-                    reg1 = SPU_ptr->byte_code[i];
+                ++IC;
+                if (IC < SPU_ptr->byte_code_len) {
+                    reg1 = SPU_ptr->byte_code[IC];
                     fprintf_s(stderr, "Trying to POPR %hhX\n", reg1);
                     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &SPU_ptr->regs[reg1]);
                     break;
@@ -146,11 +147,17 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
 
             case OUT_COMMAND:
                 CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &op1);
-                fprintf_s(stderr, "Trying to OUT");
+                fprintf_s(stderr, "Trying to OUT ");
                 fprintf_s(stderr, stack_elem_frm, op1);
                 fprintf_s(stderr, "\n");
                 printf_s(stack_elem_frm, op1);
                 printf_s("\n");
+                getchar();
+                break;
+
+            case JMP_COMMAND:
+                fprintf_s(stderr, "Trying to JMP\n");
+                IC = SPU_ptr->byte_code[IC + 1] - 1;
                 break;
 
             default:

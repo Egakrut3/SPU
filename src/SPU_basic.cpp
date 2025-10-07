@@ -22,7 +22,7 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
         return ferror(byte_code_stream);
     }
     if (SPU_ptr->byte_code_len) {
-        byte_elem_t *const new_buffer = (byte_elem_t *)calloc(SPU_ptr->byte_code_len, //is allignement guarranteed&
+        byte_elem_t *const new_buffer = (byte_elem_t *)calloc(SPU_ptr->byte_code_len,
                                                               sizeof(byte_elem_t));
         if (!new_buffer) {
             PRINT_LINE();
@@ -31,8 +31,7 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
             return errno;
         }
 
-        SPU_ptr->byte_code   = new_buffer;
-        SPU_ptr->cur_command = SPU_ptr->byte_code;
+        SPU_ptr->byte_code = new_buffer;
         if (fread(SPU_ptr->byte_code, sizeof(byte_elem_t), SPU_ptr->byte_code_len, byte_code_stream) !=
                                                            SPU_ptr->byte_code_len) {
             PRINT_LINE();
@@ -105,11 +104,6 @@ errno_t SPU_verify(SPU const *const SPU_ptr) {
         err |= STACK_NULL_BYTE_CODE;
     }
 
-    if (!(SPU_ptr->cur_command >= SPU_ptr->byte_code and
-          SPU_ptr->cur_command <= SPU_ptr->byte_code + SPU_ptr->byte_code_len)) {
-        err |= STACK_INVALID_CUR_COMMAND;
-    }
-
     CLEAR_RESOURCES();
     return err;
 }
@@ -146,10 +140,6 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
         fprintf_s(out_stream, "SPU has null byte_code    ");
     }
 
-    if (err & STACK_INVALID_CUR_COMMAND) {
-        fprintf_s(out_stream, "SPU has invalid cur_command    ");
-    }
-
     fprintf_s(out_stream, "\nSPU[%p]"
               ON_DEBUG(" \"%s\" declared in file %s, line %zu in \"%s\" function")
               " {\n",
@@ -171,15 +161,13 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     fprintf_s(out_stream, "\tbyte_code[%zu] = [%p] {\n", SPU_ptr->byte_code_len, SPU_ptr->byte_code);
     for (size_t i = 0; i < SPU_ptr->byte_code_len; i += sizeof(stack_elem_t)) {
         fprintf_s(out_stream, "\t\t");
-        for (size_t j = i; j < i + 8 and j < SPU_ptr->byte_code_len; ++j) {
+        for (size_t j = i; j < i + sizeof(stack_elem_t) and j < SPU_ptr->byte_code_len; ++j) {
             fprintf_s(out_stream, "[%zu] = %hhX ", j, SPU_ptr->byte_code[j]);
         }
         fprintf_s(out_stream, "\n");
     }
     fprintf_s(out_stream, "\t}\n");
 
-    fprintf_s(out_stream, "\tcur_command = %p (index %tu)\n", SPU_ptr->cur_command,
-                                                              SPU_ptr->cur_command - SPU_ptr->byte_code);
     ON_DEBUG(fprintf_s(out_stream, "\thash_val = %llX, must be %llX\n", SPU_ptr->hash_val,
                                                                         SPU_hash(SPU_ptr)));
     fprintf_s(out_stream, "\tis_valid = %d\n", SPU_ptr->is_valid);

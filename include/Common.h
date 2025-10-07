@@ -103,6 +103,13 @@ enum Asm_command_code : byte_elem_t {
     POW_COMMAND,
     IN_COMMAND,
     OUT_COMMAND,
+    JMP_COMMAND,
+    JB_COMMAND,
+    JBE_COMMAND,
+    JA_COMMAND,
+    JAE_COMMAND,
+    JE_COMMAND,
+    JNE_COMMAND,
 };
 
 #endif

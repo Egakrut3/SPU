@@ -2,6 +2,7 @@
 #include "Option_manager.h"
 #include "User_error_handler.h"
 #include "Assembler.h"
+#include "Disassembler.h"
 #include "SPU.h"
 //TODO - make functions for each command
 
@@ -21,12 +22,20 @@ int main(int const argc, char const *const *const argv) {
 
     MAIN_CHECK_FUNC(make_byte_code, cur_config.input_stream, cur_config.output_stream
                                     ON_DEBUG(, cur_config.text_output_stream));
+    /*fprintf_s(stderr, "%d\n", make_byte_code(cur_config.input_stream, cur_config.output_stream
+                                             ON_DEBUG(, cur_config.text_output_stream)));*/
+
+    /*FILE *dis_code = nullptr;
+    MAIN_CHECK_FUNC(fopen_s, &dis_code, "Dis_code.txt", "w");
+    rewind(cur_config.output_stream);
+    MAIN_CHECK_FUNC(disassembly_byte_code, cur_config.output_stream, dis_code);*/
 
     rewind(cur_config.output_stream);
     SPU_CREATE(cur_SPU, 5, cur_config.output_stream, MAIN_CHECK_FUNC);
 
-    SPU_DUMP(stderr, &cur_SPU, 0);
     MAIN_CHECK_FUNC(SPU_execute, &cur_SPU);
+    //fprintf_s(stderr, "%d\n", SPU_execute(&cur_SPU));
+    SPU_DUMP(stderr, &cur_SPU, 0);
 
     colored_printf(GREEN, BLACK, "\n\n\nCOMMIT GITHUB\n\n");
     CLEAR_RESOURCES();
