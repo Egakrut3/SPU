@@ -21,22 +21,13 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
         CLEAR_RESOURCES();
         return ferror(byte_code_stream);
     }
-    if (SPU_ptr->byte_code_len) {
-        CHECK_FUNC(My_calloc, (void **)&SPU_ptr->byte_code, SPU_ptr->byte_code_len, sizeof(byte_elem_t));
-        
-        if (fread(SPU_ptr->byte_code, sizeof(byte_elem_t), SPU_ptr->byte_code_len, byte_code_stream) !=
-                                                           SPU_ptr->byte_code_len) {
-            PRINT_LINE();
-            fprintf_s(stderr, "fread failed\n");
-            CLEAR_RESOURCES();
-            return ferror(byte_code_stream);
-        }
-    }
-    else {
+    CHECK_FUNC(My_calloc, (void **)&SPU_ptr->byte_code, SPU_ptr->byte_code_len, sizeof(byte_elem_t));
+    if (fread(SPU_ptr->byte_code, sizeof(byte_elem_t), SPU_ptr->byte_code_len, byte_code_stream) !=
+                                                        SPU_ptr->byte_code_len) {
         PRINT_LINE();
-        fprintf_s(stderr, "File contains empty byte-code\n");
+        fprintf_s(stderr, "fread failed\n");
         CLEAR_RESOURCES();
-        return EMPTY_BYTE_CODE;
+        return ferror(byte_code_stream);
     }
 
     SPU_ptr->is_valid          = true;
@@ -83,7 +74,6 @@ errno_t SPU_verify(SPU const *const SPU_ptr) {
     }
 
     if (!SPU_ptr->is_valid)      { err |= SPU_INVALID; }
-    if (!SPU_ptr->byte_code_len) { err |= SPU_NULL_BYTE_CODE_LEN; }
     if (!SPU_ptr->byte_code)     { err |= STACK_NULL_BYTE_CODE; }
 
     CLEAR_RESOURCES();
@@ -105,7 +95,6 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     if (err & SPU_HASH_UNMATCH)       { fprintf_s(out_stream, "SPU hash unmatch    "); }
     if (err & SPU_CANARY_SPOILED)     { fprintf_s(out_stream, "SPU canary spoiled    "); }
     if (err & SPU_INVALID)            { fprintf_s(out_stream, "SPU invalid    "); }
-    if (err & SPU_NULL_BYTE_CODE_LEN) { fprintf_s(out_stream, "SPU has null byte_code_len    "); }
     if (err & STACK_NULL_BYTE_CODE)   { fprintf_s(out_stream, "SPU has null byte_code    "); }
 
     fprintf_s(out_stream, "\nSPU[%p]"

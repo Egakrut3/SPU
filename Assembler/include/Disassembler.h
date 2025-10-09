@@ -2,7 +2,7 @@
 #define DISASSEMBLER_H
 
 #include "Common.h"
-#include "SPU.h"
+#include "Assembler.h"
 
 #define CODE_TOO_LONG 1'008
 

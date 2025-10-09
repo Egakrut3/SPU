@@ -446,7 +446,7 @@ static errno_t JNE_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     return 0;
 }
 
-errno_t (*const execute_functions[__ASM_COMMAND_COUNT])(size_t *, SPU *) = {
+static errno_t (*const execute_functions[__ASM_COMMAND_COUNT])(size_t *, SPU *) = {
     &HLT_execute,
     &PUSH_execute,
     &PUSHR_execute,
@@ -479,11 +479,12 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
 
     size_t IC = 0;
     while (IC < SPU_ptr->byte_code_len) {
-        if (SPU_ptr->byte_code[IC] >= __ASM_COMMAND_COUNT) { CLEAR_RESOURCES(); return UNKNOWN_COMMAND; }
+        byte_elem_t const cur_command = SPU_ptr->byte_code[IC];
+        if (cur_command >= __ASM_COMMAND_COUNT) { CLEAR_RESOURCES(); return UNKNOWN_COMMAND; }
 
-        CHECK_FUNC(execute_functions[SPU_ptr->byte_code[IC]], &IC, SPU_ptr);
+        CHECK_FUNC(execute_functions[cur_command], &IC, SPU_ptr);
 
-        if (SPU_ptr->byte_code[IC] == HLT_COMMAND) {
+        if (cur_command == HLT_COMMAND) {
             if (SPU_ptr->stack.size) { CLEAR_RESOURCES(); return STACK_NOT_EMPTY_AFTER_EXECUTION; }
             else                     { CLEAR_RESOURCES(); return 0; }
         }

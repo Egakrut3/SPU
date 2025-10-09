@@ -33,11 +33,10 @@ struct SPU {
 
 uint64_t SPU_hash(SPU const *SPU_ptr);
 
-#define EMPTY_BYTE_CODE                 1'003
-#define INCOMPLETE_ARGUMENT             1'004
-#define STACK_NOT_EMPTY_AFTER_EXECUTION 1'005
-#define UNKNOWN_COMMAND                 1'006
-#define NO_HLT_COMMAND_REACHED          1'007
+#define INCOMPLETE_ARGUMENT             1'003
+#define STACK_NOT_EMPTY_AFTER_EXECUTION 1'004
+#define UNKNOWN_COMMAND                 1'005
+#define NO_HLT_COMMAND_REACHED          1'006
 
 errno_t SPU_Ctor(SPU *SPU_ptr, size_t start_capacity, FILE *byte_code_stream
                  ON_DEBUG(, Var_info var_info));
@@ -58,8 +57,7 @@ void SPU_Dtor(SPU *SPU_ptr);
 #define SPU_HASH_UNMATCH          0B100000000000000000
 #define SPU_CANARY_SPOILED        0B1000000000000000000
 #define SPU_INVALID               0B10000000000000000000
-#define SPU_NULL_BYTE_CODE_LEN    0B100000000000000000000
-#define STACK_NULL_BYTE_CODE      0B1000000000000000000000
+#define STACK_NULL_BYTE_CODE      0B100000000000000000000
 errno_t SPU_verify(SPU const *SPU_ptr);
 
 void SPU_dump(FILE *out_stream, SPU const *SPU_ptr,

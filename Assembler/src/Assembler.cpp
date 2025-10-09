@@ -622,7 +622,8 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
             if (i == HLT_COMMAND) {
                 CHECK_FUNC(My_fwrite, &cur_len,  sizeof(cur_len),    1,       byte_code_stream);
                 CHECK_FUNC(My_fwrite, byte_code, sizeof(*byte_code), cur_len, byte_code_stream);
-                ON_DEBUG(fprintf_s(text_byte_code_stream, "%s", text_byte_code));
+                ON_DEBUG(CHECK_FUNC(My_fwrite, text_byte_code, sizeof(*text_byte_code), text_cur_len,
+                                    text_byte_code_stream));
                 CLEAR_RESOURCES();
                 return 0;
             }
