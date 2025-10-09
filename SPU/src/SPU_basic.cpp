@@ -15,23 +15,15 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
     CHECK_FUNC(My_stack_Ctor, &SPU_ptr->stack, start_capacity, var_info);
     ON_DEBUG(SPU_ptr->var_info   = var_info;)
 
-    if (fread(&SPU_ptr->byte_code_len, sizeof(SPU_ptr->byte_code_len), 1, byte_code_stream) != 1) {
+    if (fread(&SPU_ptr->byte_code_len, sizeof(SPU_ptr->byte_code_len), 1, byte_code_stream) != 1) { //TODO - move reading file to function
         PRINT_LINE();
         fprintf_s(stderr, "fread failed\n");
         CLEAR_RESOURCES();
         return ferror(byte_code_stream);
     }
     if (SPU_ptr->byte_code_len) {
-        byte_elem_t *const new_buffer = (byte_elem_t *)calloc(SPU_ptr->byte_code_len,
-                                                              sizeof(byte_elem_t));
-        if (!new_buffer) {
-            PRINT_LINE();
-            perror("calloc failed");
-            CLEAR_RESOURCES();
-            return errno;
-        }
-
-        SPU_ptr->byte_code = new_buffer;
+        CHECK_FUNC(My_calloc, (void **)&SPU_ptr->byte_code, SPU_ptr->byte_code_len, sizeof(byte_elem_t));
+        
         if (fread(SPU_ptr->byte_code, sizeof(byte_elem_t), SPU_ptr->byte_code_len, byte_code_stream) !=
                                                            SPU_ptr->byte_code_len) {
             PRINT_LINE();

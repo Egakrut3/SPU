@@ -1,11 +1,18 @@
 #include "Assembler.h"
 #include <string.h>
 
+static size_t const UNALIGN8_MASK = 0B111,
+                    ALIGN8_MASK   = ~UNALIGN8_MASK;
+
+size_t get_assembler_aligned(size_t const x) {
+    return (x + UNALIGN8_MASK) & ALIGN8_MASK;
+}
+
 static size_t const BYTE_CODE_MAX_LEN   = 0X1000,
                     ASM_COMMAND_MAX_LEN = 5;
 
 static errno_t HLT_compilate(FILE *const code_stream,
-                             size_t *const cur_len,      byte_elem_t *const byte_code
+                             size_t *const cur_len,      byte_elem_t *const byte_code //TODO - rename to cur_len_ptr
                   ON_DEBUG(, size_t *const text_cur_len, char *const text_byte_code)) {
     assert(code_stream);
              assert(cur_len);      assert(*cur_len      < BYTE_CODE_MAX_LEN); assert(byte_code);
@@ -91,9 +98,6 @@ static errno_t PUSHR_compilate(FILE *const code_stream,
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
                                         "%hhX\n", reg);
-             *text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
-                                        BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "\n");
     )
 
     ++*cur_len;
@@ -149,9 +153,6 @@ static errno_t POPR_compilate(FILE *const code_stream,
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
                                         "%hhX\n", reg);
-             *text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
-                                        BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "\n");
     )
 
     ++*cur_len;
@@ -172,7 +173,7 @@ static errno_t ADD_compilate(FILE *const code_stream,
     byte_code[*cur_len] = ADD_COMMAND;
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "%hhX ", ADD_COMMAND);
+                                        "%hhX\n", ADD_COMMAND);
     )
 
     ++*cur_len;
@@ -193,7 +194,7 @@ static errno_t SUB_compilate(FILE *const code_stream,
     byte_code[*cur_len] = SUB_COMMAND;
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "%hhX ", SUB_COMMAND);
+                                        "%hhX\n", SUB_COMMAND);
     )
 
     ++*cur_len;
@@ -214,7 +215,7 @@ static errno_t MLT_compilate(FILE *const code_stream,
     byte_code[*cur_len] = MLT_COMMAND;
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "%hhX ", MLT_COMMAND);
+                                        "%hhX\n", MLT_COMMAND);
     )
 
     ++*cur_len;
@@ -235,7 +236,7 @@ static errno_t DIV_compilate(FILE *const code_stream,
     byte_code[*cur_len] = DIV_COMMAND;
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "%hhX ", DIV_COMMAND);
+                                        "%hhX\n", DIV_COMMAND);
     )
 
     ++*cur_len;
@@ -256,7 +257,7 @@ static errno_t SQRT_compilate(FILE *const code_stream,
     byte_code[*cur_len] = SQRT_COMMAND;
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "%hhX ", SQRT_COMMAND);
+                                        "%hhX\n", SQRT_COMMAND);
     )
 
     ++*cur_len;
@@ -277,7 +278,7 @@ static errno_t POW_compilate(FILE *const code_stream,
     byte_code[*cur_len] = POW_COMMAND;
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "%hhX ", POW_COMMAND);
+                                        "%hhX\n", POW_COMMAND);
     )
 
     ++*cur_len;
@@ -298,7 +299,7 @@ static errno_t IN_compilate(FILE *const code_stream,
     byte_code[*cur_len] = IN_COMMAND;
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "%hhX ", IN_COMMAND);
+                                        "%hhX\n", IN_COMMAND);
     )
 
     ++*cur_len;
@@ -319,7 +320,7 @@ static errno_t OUT_compilate(FILE *const code_stream,
     byte_code[*cur_len] = OUT_COMMAND;
     ON_DEBUG(*text_cur_len += sprintf_s(text_byte_code    + *text_cur_len,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
-                                        "%hhX ", OUT_COMMAND);
+                                        "%hhX\n", OUT_COMMAND);
     )
 
     ++*cur_len;
@@ -342,7 +343,7 @@ static errno_t JMP_compilate(FILE *const code_stream,
                                         BYTE_CODE_MAX_LEN - *text_cur_len,
                                         "%hhX ", JMP_COMMAND);)
 
-    byte_elem_t pos = 0;
+    byte_elem_t pos = 0; //TODO - possible make size_t
     CHECK_FUNC(My_fscanf_s, 1, code_stream, "%hhu", &pos);
 
     ++*cur_len;
@@ -553,9 +554,9 @@ static errno_t JNE_compilate(FILE *const code_stream,
 
 struct Asm_command {
     char const *name;
-    errno_t (*compilate_func)(FILE *const code_stream,
-                              size_t *const cur_len,      byte_elem_t *const byte_code
-                   ON_DEBUG(, size_t *const text_cur_len, char *const text_byte_code));
+    errno_t (*compilate_function)(FILE *,
+                                  size_t *, byte_elem_t *
+                       ON_DEBUG(, size_t *, char *));
 };
 
 static Asm_command asm_commands[__ASM_COMMAND_COUNT] = {
@@ -615,8 +616,8 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
             if (strcmp(cur_command, asm_commands[i].name)) { continue; }
 
             match_any = true;
-            CHECK_FUNC(asm_commands[i].compilate_func, code_stream, &cur_len,      byte_code
-                                                         ON_DEBUG(, &text_cur_len, text_byte_code));
+            CHECK_FUNC(asm_commands[i].compilate_function, code_stream, &cur_len,      byte_code
+                                                             ON_DEBUG(, &text_cur_len, text_byte_code));
 
             if (i == HLT_COMMAND) {
                 CHECK_FUNC(My_fwrite, &cur_len,  sizeof(cur_len),    1,       byte_code_stream);

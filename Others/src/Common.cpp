@@ -24,6 +24,24 @@ errno_t My_calloc(void **const dest, size_t const num, size_t const size) {
     return 0;
 }
 
+errno_t My_scanf_s(size_t const count, char const *__restrict const format, ...) {
+    assert(format);
+
+    va_list args = nullptr;
+    va_start(args, format);
+    #undef FINAL_CODE
+    #define FINAL_CODE  \
+    va_end(args);
+
+    if (vscanf_s(format, args) != count) {
+        CLEAR_RESOURCES();
+        return ferror(stdin);
+    }
+
+    CLEAR_RESOURCES();
+    return 0;
+}
+
 errno_t My_fscanf_s(size_t const count, FILE *__restrict const stream,
                     char const *__restrict const format, ...) {
     assert(stream); assert(format);
@@ -57,11 +75,4 @@ errno_t My_fwrite(const void *__restrict const buffer, size_t const size, size_t
 
     CLEAR_RESOURCES();
     return 0;
-}
-
-static size_t const UNALIGN8_MASK = 0B111,
-                    ALIGN8_MASK   = ~UNALIGN8_MASK;
-
-size_t get_assembler_aligned(size_t const x) {
-    return (x + UNALIGN8_MASK) & ALIGN8_MASK;
 }

@@ -21,10 +21,10 @@ int main(int const argc, char const *const *const argv) {
     MAIN_CHECK_FUNC(compilate, code_stream, byte_code_stream
                                  ON_DEBUG(, text_byte_code_stream));
 
-    FILE *dis_code_stream = nullptr;
+    /*FILE *dis_code_stream = nullptr;
     MAIN_CHECK_FUNC(fopen_s, &dis_code_stream, "Dis_code.txt", "w");
     rewind(byte_code_stream);
-    MAIN_CHECK_FUNC(disassembly_byte_code, byte_code_stream, dis_code_stream);
+    MAIN_CHECK_FUNC(disassembly_byte_code, byte_code_stream, dis_code_stream);*/
 
     rewind(byte_code_stream);
     SPU_CREATE(cur_SPU, 5, byte_code_stream, MAIN_CHECK_FUNC);

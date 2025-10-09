@@ -66,36 +66,12 @@ size_t const CANARY = 0XFACE'FACE'FACE'FACE;
 
 errno_t My_calloc(void **dest, size_t num, size_t size);
 
+errno_t My_scanf_s(size_t count, char const *__restrict format, ...);
+
 errno_t My_fscanf_s(size_t count, FILE *__restrict stream,
                     char const *__restrict format, ...);
 
 errno_t My_fwrite(const void *__restrict buffer, size_t size, size_t num,
                   FILE *__restrict stream);
-
-enum Asm_command_code : byte_elem_t {
-    HLT_COMMAND,
-    PUSH_COMMAND,
-    PUSHR_COMMAND,
-    POP_COMMAND,
-    POPR_COMMAND,
-    ADD_COMMAND,
-    SUB_COMMAND,
-    MLT_COMMAND,
-    DIV_COMMAND,
-    SQRT_COMMAND,
-    POW_COMMAND,
-    IN_COMMAND,
-    OUT_COMMAND,
-    JMP_COMMAND,
-    JB_COMMAND,
-    JBE_COMMAND,
-    JA_COMMAND,
-    JAE_COMMAND,
-    JE_COMMAND,
-    JNE_COMMAND,
-    __ASM_COMMAND_COUNT,
-};
-
-size_t get_assembler_aligned(size_t x);
 
 #endif
