@@ -11,9 +11,7 @@
 typedef double assembler_elem_t;
 char const assembler_elem_frm[] = "%lG";
 
-size_t get_assembler_aligned(size_t x);
-
-errno_t make_byte_code(FILE *code_stream, FILE *byte_code_stream
-                       ON_DEBUG(, FILE *text_byte_code_stream));
+errno_t compilate(FILE *code_stream, FILE *byte_code_stream
+       ON_DEBUG(, FILE *text_byte_code_stream));
 
 #endif

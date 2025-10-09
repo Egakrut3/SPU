@@ -3,7 +3,6 @@
 
 #include "Common.h"
 #include "My_stack.h"
-#include "Assembler.h"
 
 #ifdef _DEBUG
 size_t const SPU_CANARY_NUM = 1;

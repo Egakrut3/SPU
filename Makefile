@@ -1,12 +1,14 @@
-BIN_DIR = ./bin/
+BIN_DIR = bin/
 BIN_SUF = .o
 make_bin_path = $(addprefix $(BIN_DIR), $(addsuffix $(BIN_SUF), $(1)))
+make_dir_bin_path = $(addprefix $(1), $(call make_bin_path, $(2)))
 
-SRC_DIR = ./src/
+SRC_DIR = src/
 SRC_SUF = .cpp
 make_src_path = $(addprefix $(SRC_DIR), $(addsuffix $(SRC_SUF), $(1)))
+make_dir_src_path = $(addprefix $(1), $(call make_src_path, $(2)))
 
-H_DIR = ./include/
+H_DIR = ./Assembler/include/ ./SPU/include/ ./Others/include/
 
 LIB_DIR = static_libs/
 LIBS = Colored_printf My_stack
@@ -20,41 +22,45 @@ CXX_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing -Wstrict-null-sentinel -Wtype-limits           \
 -Wwrite-strings -Werror=vla -D_EJUDGE_CLIENT_SIDE -D__USE_MINGW_ANSI_STDIO -D_DEBUG
 
-TARGET = $(addprefix $(BIN_DIR), Assembler.exe)
+TARGET = $(addprefix ./Others/bin/, Assembler.exe)
 
-OBJ = Common Option_manager User_error_handler Assembler Disassembler SPU_common SPU_basic \
-SPU_functions main
+Assembler_OBJ = Assembler Disassembler
+SPU_OBJ = SPU_common SPU_basic SPU_functions
+Others_OBJ = Common main
 
 make_object = $(call make_bin_path, $(1)) : $(call make_src_path, $(1)); \
-@$(CXX) $(CXX_FLAGS) -c $$< -I $(H_DIR) -o $$@
+@$(CXX) $(CXX_FLAGS) -c $$< $(addprefix -I, $(H_DIR)) -o $$@
+make_dir_object = $(call make_dir_bin_path, $(1), $(2)) : $(call make_dir_src_path, $(1), $(2)); \
+@$(CXX) $(CXX_FLAGS) -c $$< $(addprefix -I, $(H_DIR)) -o $$@
 
 .PHONY : all prepare clean
 
-all : prepare $(call make_bin_path, $(OBJ))
-	@$(CXX) $(CXX_FLAGS) $(call make_bin_path, $(OBJ)) -L$(LIB_DIR) $(addprefix -l, $(LIBS)) -o $(TARGET)
+all : prepare $(call make_dir_bin_path, ./Assembler/, $(Assembler_OBJ))		\
+              $(call make_dir_bin_path, ./SPU/, $(SPU_OBJ))					\
+			  $(call make_dir_bin_path, ./Others/, $(Others_OBJ))
+	@$(CXX) $(CXX_FLAGS) $(call make_dir_bin_path, ./Assembler/, $(Assembler_OBJ))		\
+              			 $(call make_dir_bin_path, ./SPU/, $(SPU_OBJ))					\
+			  			 $(call make_dir_bin_path, ./Others/, $(Others_OBJ))					\
+            -L$(LIB_DIR) $(addprefix -l, $(LIBS)) -o $(TARGET)
 	@echo Compilation end
 	@$(TARGET)
 
 prepare :
-	@mkdir -p bin
+	@mkdir -p ./Assembler/bin/ ./SPU/bin/ ./Others/bin/
 
-$(call make_object, Common)
+$(call make_dir_object, ./Others/, Common)
 
-$(call make_object, Option_manager)
+$(call make_dir_object, ./Assembler/, Assembler)
 
-$(call make_object, User_error_handler)
+$(call make_dir_object, ./Assembler/, Disassembler)
 
-$(call make_object, Assembler)
+$(call make_dir_object, ./SPU/, SPU_common)
 
-$(call make_object, Disassembler)
+$(call make_dir_object, ./SPU/, SPU_basic)
 
-$(call make_object, SPU_common)
+$(call make_dir_object, ./SPU/, SPU_functions)
 
-$(call make_object, SPU_basic)
-
-$(call make_object, SPU_functions)
-
-$(call make_object, main)
+$(call make_dir_object, ./Others/, main)
 
 clean:
-	@rm -rf bin Byte_code
+	@rm -rf ./Assembler/bin/ ./SPU/bin/ ./Others/bin/ Byte_code Text_byte_code.txt Dis_code.txt
