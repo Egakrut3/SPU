@@ -31,7 +31,7 @@ int main(int const argc, char const *const *const argv) {
     SPU_CREATE(cur_SPU, 5, byte_code_stream, MAIN_CHECK_FUNC);
 
     MAIN_CHECK_FUNC(SPU_execute, &cur_SPU);
-    SPU_DUMP(stderr, &cur_SPU, 0);
+    //SPU_DUMP(stderr, &cur_SPU, 0);
 
     colored_printf(GREEN, BLACK, "\n\n\nCOMMIT GITHUB\n\n");
     CLEAR_RESOURCES();

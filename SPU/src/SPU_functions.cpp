@@ -251,8 +251,8 @@ static errno_t OUT_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     fprintf_s(stderr, "Trying to OUT ");
     fprintf_s(stderr, stack_elem_frm, x);
     fprintf_s(stderr, "\n");
-    printf_s(stack_elem_frm, x);
-    printf_s("\n");
+    colored_printf(YELLOW, BLACK, stack_elem_frm, x);
+    colored_printf(YELLOW, BLACK, "\n");
     getchar();
 
     ++*IC_ptr;
