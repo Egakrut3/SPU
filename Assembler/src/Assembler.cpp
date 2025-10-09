@@ -610,9 +610,11 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
            text_cur_len < BYTE_CODE_MAX_LEN)) {
         CHECK_FUNC(My_fscanf_s, 1, code_stream, "%s", cur_command, ASM_COMMAND_MAX_LEN + 1); //TODO - make one read
 
+        bool match_any = false;
         for (size_t i = 0; i < __ASM_COMMAND_COUNT; ++i) {
             if (strcmp(cur_command, asm_commands[i].name)) { continue; }
 
+            match_any = true;
             CHECK_FUNC(asm_commands[i].compilate_func, code_stream, &cur_len,      byte_code
                                                          ON_DEBUG(, &text_cur_len, text_byte_code));
 
@@ -623,10 +625,11 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
                 CLEAR_RESOURCES();
                 return 0;
             }
+
+            break;
         }
 
-        CLEAR_RESOURCES();
-        return UNKNOWN_ASM_COMMAND;
+        if (!match_any) { CLEAR_RESOURCES(); return UNKNOWN_ASM_COMMAND; }
     }
 
     CLEAR_RESOURCES();
