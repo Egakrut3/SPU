@@ -33,7 +33,7 @@ errno_t My_scanf_s(size_t const count, char const *__restrict const format, ...)
     #define FINAL_CODE  \
     va_end(args);
 
-    if (vscanf_s(format, args) != count) {
+    if (vscanf_s(format, args) != (ssize_t)count) {
         CLEAR_RESOURCES();
         return ferror(stdin);
     }
@@ -52,7 +52,7 @@ errno_t My_fscanf_s(size_t const count, FILE *__restrict const stream,
     #define FINAL_CODE  \
     va_end(args);
 
-    if (vfscanf_s(stream, format, args) != count) {
+    if (vfscanf_s(stream, format, args) != (ssize_t)count) {
         CLEAR_RESOURCES();
         return ferror(stream);
     }
