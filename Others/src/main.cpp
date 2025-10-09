@@ -2,7 +2,6 @@
 #include "Assembler.h"
 #include "Disassembler.h"
 #include "SPU.h"
-//TODO - make functions for each command
 
 int main(int const argc, char const *const *const argv) {
     assert(argc > 0); assert(argv); assert(*argv);

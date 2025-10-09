@@ -443,7 +443,6 @@ errno_t disassembly_byte_code(FILE *byte_code_stream, FILE *code_stream) {
     CHECK_FUNC(My_calloc, (void **)&code, CODE_MAX_LEN + 1, sizeof(*code));
 
     size_t IC = 0;
-    fprintf_s(stderr, "byte_code_len = %zu\n", byte_code_len);
     while (IC < byte_code_len and cur_len < CODE_MAX_LEN) {
         byte_elem_t const cur_command = byte_code[IC];
         if (cur_command >= __ASM_COMMAND_COUNT) { CLEAR_RESOURCES(); return UNKNOWN_COMMAND; }
