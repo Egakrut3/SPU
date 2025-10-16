@@ -111,7 +111,7 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     }
     fprintf_s(out_stream, "\t}\n");
 
-    My_stack_dump(out_stream, &SPU_ptr->stack, from_where, err); //TODO - I can't add tabulation there and mute comments
+    My_stack_dump(out_stream, &SPU_ptr->stack, err, from_where, 1, false);
 
     fprintf_s(out_stream, "\tbyte_code_len = %zu\n", SPU_ptr->byte_code_len);
 

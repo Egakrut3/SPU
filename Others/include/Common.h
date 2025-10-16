@@ -8,6 +8,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <stdio.h>
 #include "Colored_printf.h"
+#include <string.h>
 
 typedef unsigned char byte_elem_t;
 
@@ -15,7 +16,6 @@ typedef unsigned char byte_elem_t;
                                           "Error found, file " __FILE__ ", line %d in \"%s\" function\n",   \
                                           __LINE__, __func__)
 
-//TODO - possible make macros for return
 #define CLEAR_RESOURCES()   \
 do {                        \
     FINAL_CODE              \
@@ -33,16 +33,16 @@ do {                                                \
     }                                               \
 } while (false)
 
-#define MAIN_CHECK_FUNC(func, ...)          \
-do {                                        \
-    errno_t err_val = func(__VA_ARGS__);    \
-    if (err_val) {                          \
-        PRINT_LINE();                       \
-        printf("Code %d: ", err_val);       \
-        perror(#func " failed");            \
-        CLEAR_RESOURCES();                  \
-        return 0;                           \
-    }                                       \
+#define MAIN_CHECK_FUNC(func, ...)                  \
+do {                                                \
+    errno_t err_val = func(__VA_ARGS__);            \
+    if (err_val) {                                  \
+        PRINT_LINE();                               \
+        fprintf_s(stderr, "Code %d: ", err_val);    \
+        perror(#func " failed");                    \
+        CLEAR_RESOURCES();                          \
+        return 0;                                   \
+    }                                               \
 } while (false)
 
 #ifdef _DEBUG
@@ -66,12 +66,19 @@ size_t const CANARY = 0XFACE'FACE'FACE'FACE;
 
 errno_t My_calloc(void **dest, size_t num, size_t size);
 
-errno_t My_scanf_s(size_t count, char const *__restrict format, ...);
-
-errno_t My_fscanf_s(size_t count, FILE *__restrict stream,
-                    char const *__restrict format, ...);
+errno_t My_fread(void *__restrict buffer, size_t size, size_t num,
+                 FILE *__restrict stream);
 
 errno_t My_fwrite(const void *__restrict buffer, size_t size, size_t num,
                   FILE *__restrict stream);
+
+errno_t get_path_filesize(char const *path, __int64 *filesize);
+
+errno_t get_opened_filesize(FILE *cur_file, __int64 *filesize);
+
+errno_t get_all_content(FILE *stream, size_t *filesize_dest, char **buffer);
+
+errno_t My_sscanf_s(size_t count, char const *__restrict buffer,
+                    char const *__restrict format, ...);
 
 #endif

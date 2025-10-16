@@ -33,10 +33,9 @@ struct SPU {
 
 uint64_t SPU_hash(SPU const *SPU_ptr);
 
-#define INCOMPLETE_ARGUMENT             1'003
-#define STACK_NOT_EMPTY_AFTER_EXECUTION 1'004
-#define UNKNOWN_COMMAND                 1'005
-#define NO_HLT_COMMAND_REACHED          1'006
+#define STACK_NOT_EMPTY_AFTER_EXECUTION 1'005
+#define UNKNOWN_COMMAND                 1'006
+#define NO_HLT_COMMAND_REACHED          1'007
 
 errno_t SPU_Ctor(SPU *SPU_ptr, size_t start_capacity, FILE *byte_code_stream
                  ON_DEBUG(, Var_info var_info));

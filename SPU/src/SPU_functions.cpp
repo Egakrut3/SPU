@@ -28,7 +28,7 @@ static errno_t PUSH_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
 
     stack_elem_t x = *(stack_elem_t *)(SPU_ptr->byte_code + *IC_ptr);
     fprintf_s(stderr, "Trying to PUSH ");
-    fprintf_s(stderr, stack_elem_frm, x);
+    fprintf_s(stderr, STACK_ELEM_FRM, x);
     fprintf_s(stderr, "\n");
     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, x);
 
@@ -104,9 +104,9 @@ static errno_t ADD_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &x);
     fprintf_s(stderr, "Trying to ADD ");
-    fprintf_s(stderr, stack_elem_frm, x);
+    fprintf_s(stderr, STACK_ELEM_FRM, x);
     fprintf_s(stderr, " ");
-    fprintf_s(stderr, stack_elem_frm, y);
+    fprintf_s(stderr, STACK_ELEM_FRM, y);
     fprintf_s(stderr, "\n");
     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, x + y);
 
@@ -126,9 +126,9 @@ static errno_t SUB_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &x);
     fprintf_s(stderr, "Trying to SUB ");
-    fprintf_s(stderr, stack_elem_frm, x);
+    fprintf_s(stderr, STACK_ELEM_FRM, x);
     fprintf_s(stderr, " ");
-    fprintf_s(stderr, stack_elem_frm, y);
+    fprintf_s(stderr, STACK_ELEM_FRM, y);
     fprintf_s(stderr, "\n");
     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, x - y);
 
@@ -148,9 +148,9 @@ static errno_t MLT_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &x);
     fprintf_s(stderr, "Trying to MLT ");
-    fprintf_s(stderr, stack_elem_frm, x);
+    fprintf_s(stderr, STACK_ELEM_FRM, x);
     fprintf_s(stderr, " ");
-    fprintf_s(stderr, stack_elem_frm, y);
+    fprintf_s(stderr, STACK_ELEM_FRM, y);
     fprintf_s(stderr, "\n");
     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, x * y);
 
@@ -170,9 +170,9 @@ static errno_t DIV_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &x);
     fprintf_s(stderr, "Trying to DIV ");
-    fprintf_s(stderr, stack_elem_frm, x);
+    fprintf_s(stderr, STACK_ELEM_FRM, x);
     fprintf_s(stderr, " ");
-    fprintf_s(stderr, stack_elem_frm, y);
+    fprintf_s(stderr, STACK_ELEM_FRM, y);
     fprintf_s(stderr, "\n");
     if (y == 0) { CLEAR_RESOURCES(); return EDOM; }
     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, x / y);
@@ -191,7 +191,7 @@ static errno_t SQRT_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     stack_elem_t x = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &x);
     fprintf_s(stderr, "Trying to SQRT ");
-    fprintf_s(stderr, stack_elem_frm, x);
+    fprintf_s(stderr, STACK_ELEM_FRM, x);
     fprintf_s(stderr, "\n");
     if (x < 0) { CLEAR_RESOURCES(); return EDOM; }
     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, sqrt(x));
@@ -212,9 +212,9 @@ static errno_t POW_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &x);
     fprintf_s(stderr, "Trying to POW ");
-    fprintf_s(stderr, stack_elem_frm, x);
+    fprintf_s(stderr, STACK_ELEM_FRM, x);
     fprintf_s(stderr, " ");
-    fprintf_s(stderr, stack_elem_frm, y);
+    fprintf_s(stderr, STACK_ELEM_FRM, y);
     fprintf_s(stderr, "\n");
     //TODO - how to check
     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, pow(x, y));
@@ -232,7 +232,7 @@ static errno_t IN_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
 
     stack_elem_t x = {};
     fprintf_s(stderr, "Trying to IN\n");
-    CHECK_FUNC(My_scanf_s, 1, stack_elem_frm, &x);
+    CHECK_FUNC(My_scanf_s, 1, STACK_ELEM_FRM, &x);
     CHECK_FUNC(My_stack_push, &SPU_ptr->stack, x);
 
     ++*IC_ptr;
@@ -249,9 +249,9 @@ static errno_t OUT_execute(size_t *const IC_ptr, SPU *const SPU_ptr) {
     stack_elem_t x = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->stack, &x);
     fprintf_s(stderr, "Trying to OUT ");
-    fprintf_s(stderr, stack_elem_frm, x);
+    fprintf_s(stderr, STACK_ELEM_FRM, x);
     fprintf_s(stderr, "\n");
-    colored_printf(MAGENTA, BLACK, stack_elem_frm, x);
+    colored_printf(MAGENTA, BLACK, STACK_ELEM_FRM, x);
     colored_printf(MAGENTA, BLACK, "\n");
     getchar();
 
