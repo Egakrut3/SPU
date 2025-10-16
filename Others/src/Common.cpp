@@ -38,14 +38,10 @@ errno_t My_fwrite(const void *__restrict const buffer, size_t const size, size_t
                   FILE *__restrict const stream) {
     assert(buffer); assert(stream);
 
-    fprintf_s(stderr, "Hello3\n");
-
     if (fwrite(buffer, size, num, stream) != num) {
-        fprintf_s(stderr, "Hello4\n");
+        fflush(stderr);
         return ferror(stream);
     }
-
-    fprintf_s(stderr, "Hello5\n");
 
     return 0;
 }
@@ -96,7 +92,7 @@ errno_t get_all_content(FILE *const stream, size_t *const filesize_dest, char **
 
 errno_t My_sscanf_s(size_t const count, char const *__restrict const buffer,
                     char const *__restrict const format, ...) {
-    assert(format);
+    assert(buffer); assert(format);
 
     va_list args = nullptr;
     va_start(args, format);
@@ -105,6 +101,24 @@ errno_t My_sscanf_s(size_t const count, char const *__restrict const buffer,
         va_end(args);
 
     if (vsscanf_s(buffer, format, args) != (ssize_t)count) {
+        CLEAR_RESOURCES();
+        return ferror(stdin);
+    }
+
+    CLEAR_RESOURCES();
+    return 0;
+}
+
+errno_t My_scanf_s(size_t const count, char const *__restrict const format, ...) {
+    assert(format);
+
+    va_list args = nullptr;
+    va_start(args, format);
+    #undef FINAL_CODE
+    #define FINAL_CODE  \
+        va_end(args);
+
+    if (vscanf_s(format, args) != (ssize_t)count) {
         CLEAR_RESOURCES();
         return ferror(stdin);
     }

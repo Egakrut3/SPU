@@ -26,7 +26,7 @@ TARGET = $(addprefix ./bin/, Assembler.exe)
 
 Assembler_OBJ = Assembler_basic Assembler_functions
 Disassembler_OBJ = Disassembler
-SPU_OBJ = SPU_common SPU_basic SPU_functions
+SPU_OBJ = SPU_basic SPU_functions
 Others_OBJ = Common main
 
 make_object = $(call make_bin_path, $(1)) : $(call make_src_path, $(1)); \
@@ -37,8 +37,10 @@ make_dir_object = $(call make_dir_bin_path, $(1), $(2)) : $(call make_dir_src_pa
 .PHONY : all prepare clean
 
 all : prepare $(call make_dir_bin_path, ./Assembler/, $(Assembler_OBJ))			\
+			  $(call make_dir_bin_path, ./SPU/, $(SPU_OBJ))			\
 			  $(call make_dir_bin_path, ./Others/, $(Others_OBJ))
 	@$(CXX) $(CXX_FLAGS) $(call make_dir_bin_path, ./Assembler/, $(Assembler_OBJ))			\
+						 $(call make_dir_bin_path, ./SPU/, $(SPU_OBJ))			\
 			  			 $(call make_dir_bin_path, ./Others/, $(Others_OBJ))				\
             -L$(LIB_DIR) $(addprefix -l, $(LIBS)) -o $(TARGET)
 	@echo Compilation end
@@ -53,11 +55,9 @@ $(call make_dir_object, ./Assembler/, Assembler_functions)
 
 #$(call make_dir_object, ./Disassembler/, Disassembler)
 
-#$(call make_dir_object, ./SPU/, SPU_common)
+$(call make_dir_object, ./SPU/, SPU_basic)
 
-#$(call make_dir_object, ./SPU/, SPU_basic)
-
-#$(call make_dir_object, ./SPU/, SPU_functions)
+$(call make_dir_object, ./SPU/, SPU_functions)
 
 $(call make_dir_object, ./Others/, main)
 

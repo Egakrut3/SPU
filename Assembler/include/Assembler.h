@@ -3,7 +3,6 @@
 
 #include "Common.h"
 #include "My_stack.h"
-#include "SPU.h"
 
 #define BYTE_CODE_TOO_LONG  1'001
 #define UNKNOWN_ASM_COMMAND 1'002
@@ -21,6 +20,8 @@ union Assembler_elem {
 size_t const BYTE_CODE_MAX_LEN   = 0X1000;
 
 size_t const LABELS_COUNT = 10;
+size_t const REGS_NUM = 4;
+size_t const DEFAULT_POSITION = ~0u;
 
 struct Assembler {
     size_t         labels[LABELS_COUNT];
@@ -67,7 +68,7 @@ enum Asm_command_code : byte_elem_t {
     JAE_COMMAND,
     JE_COMMAND,
     JNE_COMMAND,
-    
+
     __ASM_COMMAND_COUNT,
 };
 

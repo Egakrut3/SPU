@@ -9,7 +9,7 @@ errno_t Assembler_Ctor(Assembler *const asm_ptr, FILE *const code_stream) {
     assert(asm_ptr); assert(!asm_ptr->is_valid); assert(code_stream);
 
     for (size_t i = 0; i < LABELS_COUNT; ++i) {
-        asm_ptr->labels[i] = -1;
+        asm_ptr->labels[i] = DEFAULT_POSITION;
     }
 
     CHECK_FUNC(get_all_content, code_stream, &asm_ptr->code_len, &asm_ptr->code);
@@ -30,4 +30,5 @@ void Assembler_Dtor(Assembler *const asm_ptr) {
 
     free(asm_ptr->byte_code);
     ON_DEBUG(free(asm_ptr->text_byte_code);)
+    asm_ptr->is_valid = false;
 }

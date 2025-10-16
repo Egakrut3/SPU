@@ -14,17 +14,15 @@ size_t const SPU_CANARY_NUM = 0;
 uint64_t const SPU_START_HASH   = 5683; static_assert(SPU_START_HASH & 1);
 uint64_t const SPU_HASH_MLT     = 985;  static_assert(SPU_HASH_MLT & 1);
 
-size_t const SPU_REGS_NUM = 4;
-
 struct SPU {
     size_t            beg_canary[SPU_CANARY_NUM];
 
     My_stack          stack;
     ON_DEBUG(Var_info var_info;)
     size_t            byte_code_len;
-    byte_elem_t       *byte_code;    //TODO - possible make canary
+    Assembler_elem    *byte_code;    //TODO - possible make canary
     ON_DEBUG(uint64_t hash_val;)
-    stack_elem_t      regs[SPU_REGS_NUM];
+    stack_elem_t      regs[REGS_NUM];
 
     bool              is_valid;
 
@@ -33,9 +31,10 @@ struct SPU {
 
 uint64_t SPU_hash(SPU const *SPU_ptr);
 
-#define STACK_NOT_EMPTY_AFTER_EXECUTION 1'005
-#define UNKNOWN_COMMAND                 1'006
-#define NO_HLT_COMMAND_REACHED          1'007
+#define INVALID_POSITION                1'005
+#define NOT_ENOUGH_ARGUMENTS            1'006
+#define STACK_NOT_EMPTY_AFTER_EXECUTION 1'007
+#define NO_HLT_COMMAND_REACHED          1'008
 
 errno_t SPU_Ctor(SPU *SPU_ptr, size_t start_capacity, FILE *byte_code_stream
                  ON_DEBUG(, Var_info var_info));

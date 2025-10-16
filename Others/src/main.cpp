@@ -26,7 +26,7 @@ int main(int const argc, char const *const *const argv) {
         )
 
     MAIN_CHECK_FUNC(fopen_s, &code_stream,           "Code.txt",           "r");
-    MAIN_CHECK_FUNC(fopen_s, &byte_code_stream,      "Byte_code",          "w+");
+    MAIN_CHECK_FUNC(fopen_s, &byte_code_stream,      "Byte_code",          "wb+");
     ON_DEBUG(
     MAIN_CHECK_FUNC(fopen_s, &text_byte_code_stream, "Text_byte_code.txt", "w");
     MAIN_CHECK_FUNC(fopen_s, &dis_code_stream,       "Dis_code.txt",       "w");
@@ -38,10 +38,10 @@ int main(int const argc, char const *const *const argv) {
     /*rewind(byte_code_stream);
     MAIN_CHECK_FUNC(disassembly_byte_code, byte_code_stream, dis_code_stream);*/
 
-    /*rewind(byte_code_stream);
+    rewind(byte_code_stream);
     SPU_CREATE(cur_SPU, 5, byte_code_stream, MAIN_CHECK_FUNC);
     MAIN_CHECK_FUNC(SPU_execute, &cur_SPU);
-    //SPU_DUMP(stderr, &cur_SPU, 0);*/
+    //SPU_DUMP(stderr, &cur_SPU, 0);
 
     colored_printf(GREEN, BLACK, "\n\n\nCOMMIT GITHUB\n\n");
     CLEAR_RESOURCES();

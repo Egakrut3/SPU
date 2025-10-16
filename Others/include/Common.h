@@ -81,4 +81,6 @@ errno_t get_all_content(FILE *stream, size_t *filesize_dest, char **buffer);
 errno_t My_sscanf_s(size_t count, char const *__restrict buffer,
                     char const *__restrict format, ...);
 
+errno_t My_scanf_s(size_t const count, char const *__restrict const format, ...);
+
 #endif

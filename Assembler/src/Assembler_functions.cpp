@@ -33,19 +33,19 @@ static errno_t PUSH_compilate(Assembler *const asm_ptr, size_t *const cur_char_p
                                             "%hhX ", PUSH_COMMAND);
     )
 
-    Assembler_elem x = {};
+    stack_elem_t val = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, STACK_ELEM_FRM "%n", &x.val, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, STACK_ELEM_FRM "%n", &val, &extra_len);
     *cur_char_ptr += extra_len;
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].val = x.val;
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].val = val;
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             STACK_ELEM_FRM "\n", x.val);
+                                             STACK_ELEM_FRM "\n", val);
     )
 
     return 0;
@@ -63,23 +63,23 @@ static errno_t PUSHR_compilate(Assembler *const asm_ptr, size_t *const cur_char_
                                             "%hhX ", PUSHR_COMMAND);
     )
 
-    Assembler_elem x = {};
+    byte_elem_t reg = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, " r%hhu%n", &x.reg, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, " r%hhu%n", &reg, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.reg >= SPU_REGS_NUM) {
+    if (reg >= REGS_NUM) {
         return INVALID_REGISTER;
     }
 
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].reg = x.reg;
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].reg = reg;
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%hhX\n", x.reg);
+                                             "%hhX\n", reg);
     )
 
     return 0;
@@ -112,23 +112,23 @@ static errno_t POPR_compilate(Assembler *const asm_ptr, size_t *const cur_char_p
                                             "%hhX ", POPR_COMMAND);
     )
 
-    Assembler_elem x = {};
+    byte_elem_t reg = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, " r%hhu%n", &x.reg, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, " r%hhu%n", &reg, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.reg >= SPU_REGS_NUM) {
+    if (reg >= REGS_NUM) {
         return INVALID_REGISTER;
     }
 
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].reg = x.reg;
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].reg = reg;
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%hhX\n", x.reg);
+                                             "%hhX\n", reg);
     )
 
     return 0;
@@ -266,23 +266,27 @@ static errno_t JMP_compilate(Assembler *const asm_ptr, size_t *const cur_char_pt
                                             "%hhX ", JMP_COMMAND);
     )
 
-    Assembler_elem x = {};
+    size_t lab = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &x.lab, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &lab, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.lab >= LABELS_COUNT) {
+    if (lab >= LABELS_COUNT) {
         return INVALID_LABEL;
     }
 
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[x.lab];
+
+    if (asm_ptr->labels[lab] == DEFAULT_POSITION) {
+        return INVALID_LABEL;
+    }
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[lab];
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%zu\n", asm_ptr[x.lab]);
+                                             "%zu\n", asm_ptr->labels[lab]);
     )
 
     return 0;
@@ -300,23 +304,27 @@ static errno_t JB_compilate(Assembler *const asm_ptr, size_t *const cur_char_ptr
                                             "%hhX ", JB_COMMAND);
     )
 
-    Assembler_elem x = {};
+    size_t lab = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &x.lab, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &lab, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.lab >= LABELS_COUNT) {
+    if (lab >= LABELS_COUNT) {
         return INVALID_LABEL;
     }
 
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[x.lab];
+
+    if (asm_ptr->labels[lab] == DEFAULT_POSITION) {
+        return INVALID_LABEL;
+    }
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[lab];
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%zu\n", asm_ptr[x.lab]);
+                                             "%zu\n", asm_ptr->labels[lab]);
     )
 
     return 0;
@@ -334,23 +342,27 @@ static errno_t JBE_compilate(Assembler *const asm_ptr, size_t *const cur_char_pt
                                             "%hhX ", JBE_COMMAND);
     )
 
-    Assembler_elem x = {};
+    size_t lab = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &x.lab, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &lab, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.lab >= LABELS_COUNT) {
+    if (lab >= LABELS_COUNT) {
         return INVALID_LABEL;
     }
 
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[x.lab];
+
+    if (asm_ptr->labels[lab] == DEFAULT_POSITION) {
+        return INVALID_LABEL;
+    }
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[lab];
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%zu\n", asm_ptr[x.lab]);
+                                             "%zu\n", asm_ptr->labels[lab]);
     )
 
     return 0;
@@ -368,23 +380,27 @@ static errno_t JA_compilate(Assembler *const asm_ptr, size_t *const cur_char_ptr
                                             "%hhX ", JA_COMMAND);
     )
 
-    Assembler_elem x = {};
+    size_t lab = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &x.lab, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &lab, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.lab >= LABELS_COUNT) {
+    if (lab >= LABELS_COUNT) {
         return INVALID_LABEL;
     }
 
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[x.lab];
+
+    if (asm_ptr->labels[lab] == DEFAULT_POSITION) {
+        return INVALID_LABEL;
+    }
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[lab];
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%zu\n", asm_ptr[x.lab]);
+                                             "%zu\n", asm_ptr->labels[lab]);
     )
 
     return 0;
@@ -402,23 +418,27 @@ static errno_t JAE_compilate(Assembler *const asm_ptr, size_t *const cur_char_pt
                                             "%hhX ", JAE_COMMAND);
     )
 
-    Assembler_elem x = {};
+    size_t lab = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &x.lab, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &lab, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.lab >= LABELS_COUNT) {
+    if (lab >= LABELS_COUNT) {
         return INVALID_LABEL;
     }
 
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[x.lab];
+
+    if (asm_ptr->labels[lab] == DEFAULT_POSITION) {
+        return INVALID_LABEL;
+    }
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[lab];
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%zu\n", asm_ptr[x.lab]);
+                                             "%zu\n", asm_ptr->labels[lab]);
     )
 
     return 0;
@@ -436,23 +456,27 @@ static errno_t JE_compilate(Assembler *const asm_ptr, size_t *const cur_char_ptr
                                             "%hhX ", JE_COMMAND);
     )
 
-    Assembler_elem x = {};
+    size_t lab = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &x.lab, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &lab, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.lab >= LABELS_COUNT) {
+    if (lab >= LABELS_COUNT) {
         return INVALID_LABEL;
     }
 
-    if (asm_ptr->byte_code_len     >= BYTE_CODE_MAX_LEN ON_DEBUG(or
+    if (asm_ptr->byte_code_len      >= BYTE_CODE_MAX_LEN ON_DEBUG(or
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[x.lab];
+
+    if (asm_ptr->labels[lab] == DEFAULT_POSITION) {
+        return INVALID_LABEL;
+    }
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[lab];
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%zu\n", asm_ptr[x.lab]);
+                                             "%zu\n", asm_ptr->labels[lab]);
     )
 
     return 0;
@@ -470,11 +494,11 @@ static errno_t JNE_compilate(Assembler *const asm_ptr, size_t *const cur_char_pt
                                             "%hhX ", JNE_COMMAND);
     )
 
-    Assembler_elem x = {};
+    size_t lab = {};
     size_t extra_len = 0;
-    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &x.lab, &extra_len);
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%zu%n", &lab, &extra_len);
     *cur_char_ptr += extra_len;
-    if (x.lab >= LABELS_COUNT) {
+    if (lab >= LABELS_COUNT) {
         return INVALID_LABEL;
     }
 
@@ -482,27 +506,32 @@ static errno_t JNE_compilate(Assembler *const asm_ptr, size_t *const cur_char_pt
         asm_ptr->text_byte_code_len >= BYTE_CODE_MAX_LEN)) {
         return BYTE_CODE_TOO_LONG;
     }
-    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[x.lab];
+
+    if (asm_ptr->labels[lab] == DEFAULT_POSITION) {
+        return INVALID_LABEL;
+    }
+    asm_ptr->byte_code[asm_ptr->byte_code_len++].pos = asm_ptr->labels[lab];
     ON_DEBUG(
     asm_ptr->text_byte_code_len += sprintf_s(asm_ptr->text_byte_code + asm_ptr->text_byte_code_len,
                                              BYTE_CODE_MAX_LEN - asm_ptr->text_byte_code_len,
-                                             "%zu\n", asm_ptr[x.lab]);
+                                             "%zu\n", asm_ptr->labels[lab]);
     )
 
     return 0;
 }
 
-static errno_t add_label(Assembler *const asm_ptr, size_t *const cur_char_ptr, char const *const name) {
+static errno_t add_label(Assembler *const asm_ptr, size_t *const cur_char_ptr,
+                         char const *const name, size_t const command_count) {
     assert(asm_ptr); assert(asm_ptr->is_valid); assert(asm_ptr->code); assert(cur_char_ptr);
              assert(asm_ptr->byte_code_len      < BYTE_CODE_MAX_LEN); assert(asm_ptr->byte_code);
     ON_DEBUG(assert(asm_ptr->text_byte_code_len < BYTE_CODE_MAX_LEN); assert(asm_ptr->text_byte_code);)
 
-    Assembler_elem x = {};
-    CHECK_FUNC(My_sscanf_s, 1, name, "%zu", &x.lab);
-    if (x.lab >= LABELS_COUNT) {
+    size_t lab = {};
+    CHECK_FUNC(My_sscanf_s, 1, name, "%zu", &lab);
+    if (lab >= LABELS_COUNT or asm_ptr->labels[lab] != DEFAULT_POSITION) {
         return INVALID_LABEL;
     }
-    asm_ptr->labels[x.lab] = asm_ptr->byte_code_len;
+    asm_ptr->labels[lab] = command_count;
 
     return 0;
 }
@@ -518,12 +547,27 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
     Assembler cur_asm = {};
     CHECK_FUNC(Assembler_Ctor, &cur_asm, code_stream);
     #undef FINAL_CODE
-    #define FINAL_CODE
+    #define FINAL_CODE              \
         Assembler_Dtor(&cur_asm);
 
-    //fprintf_s(stderr, "Hello1\n");
     char cur_command[ASM_COMMAND_MAX_LEN + 1] = {};
-    size_t cur_char = 0;
+    size_t cur_char      = 0,
+           command_count = 0;
+    while (cur_char < cur_asm.code_len) {
+        size_t extra_len = 0;
+        CHECK_FUNC(My_sscanf_s, 1, cur_asm.code + cur_char, "%s %n",
+                                   cur_command, ASM_COMMAND_MAX_LEN + 1, &extra_len);
+        cur_char += extra_len;
+
+        if (cur_command[0] == ':') {
+            CHECK_FUNC(add_label, &cur_asm, &cur_char, cur_command + 1, command_count);
+            continue;
+        }
+
+        ++command_count;
+    }
+
+    cur_char = 0;
     while (cur_char                   < cur_asm.code_len  and
            cur_asm.byte_code_len      < BYTE_CODE_MAX_LEN ON_DEBUG(and
            cur_asm.text_byte_code_len < BYTE_CODE_MAX_LEN)) {
@@ -565,7 +609,6 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
         CHECK_COMMAND(JNE);
 
         if (cur_command[0] == ':') {
-            CHECK_FUNC(add_label, &cur_asm, &cur_char, cur_command + 1);
             continue;
         }
 
@@ -578,14 +621,11 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
         return BYTE_CODE_TOO_LONG;
     }
 
-    fprintf_s(stderr, "Hello2\n");
     CHECK_FUNC(My_fwrite, &cur_asm.byte_code_len, sizeof(cur_asm.byte_code_len), 1,
                           byte_code_stream);
-    fprintf_s(stderr, "Hello6\n");
     CHECK_FUNC(My_fwrite, cur_asm.byte_code, sizeof(*cur_asm.byte_code), cur_asm.byte_code_len,
                           byte_code_stream);
-    ON_DEBUG(CHECK_FUNC(My_fwrite, cur_asm.text_byte_code, sizeof(*cur_asm.text_byte_code),
-                                   cur_asm.text_byte_code_len, text_byte_code_stream));
+    ON_DEBUG(fprintf_s(text_byte_code_stream, "%s", cur_asm.text_byte_code);)
 
     CLEAR_RESOURCES();
     return 0;

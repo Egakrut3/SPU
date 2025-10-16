@@ -1,12 +1,38 @@
 #include "SPU.h"
 
+#undef FINAL_CODE
+#define FINAL_CODE
+
+uint64_t SPU_hash(SPU const *const SPU_ptr) {
+    assert(SPU_ptr);
+
+    uint64_t cur_hash = SPU_START_HASH;
+
+    cur_hash = cur_hash * SPU_HASH_MLT + My_stack_hash(&SPU_ptr->stack);
+
+    ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
+                        (uint64_t)SPU_ptr->var_info.position.file_name;)
+    ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
+                        (uint64_t)SPU_ptr->var_info.position.function_name;)
+    ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
+                        SPU_ptr->var_info.position.line;)
+    ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
+                        (uint64_t)SPU_ptr->var_info.name;)
+
+    cur_hash = cur_hash * SPU_HASH_MLT + SPU_ptr->byte_code_len;
+    cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->byte_code;
+    for (size_t i = 0; i < REGS_NUM; ++i) {
+        cur_hash = cur_hash * SPU_HASH_MLT + *(const uint64_t *)&SPU_ptr->regs[i];
+    }
+    cur_hash = cur_hash * SPU_HASH_MLT + SPU_ptr->is_valid;
+
+    return cur_hash;
+}
+
 errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const byte_code_stream
                  ON_DEBUG(, Var_info const var_info)) {
     assert(SPU_ptr); assert(!SPU_ptr->is_valid); assert(start_capacity); assert(byte_code_stream);
     ON_DEBUG(assert(var_info.position.file_name); assert(var_info.name);)
-
-#undef FINAL_CODE
-#define FINAL_CODE
 
     for (size_t i = 0; i < SPU_CANARY_NUM; ++i) {
         SPU_ptr->beg_canary[i] = CANARY;
@@ -15,20 +41,11 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
     CHECK_FUNC(My_stack_Ctor, &SPU_ptr->stack, start_capacity, var_info);
     ON_DEBUG(SPU_ptr->var_info   = var_info;)
 
-    if (fread(&SPU_ptr->byte_code_len, sizeof(SPU_ptr->byte_code_len), 1, byte_code_stream) != 1) { //TODO - move reading file to function
-        PRINT_LINE();
-        fprintf_s(stderr, "fread failed\n");
-        CLEAR_RESOURCES();
-        return ferror(byte_code_stream);
-    }
-    CHECK_FUNC(My_calloc, (void **)&SPU_ptr->byte_code, SPU_ptr->byte_code_len, sizeof(byte_elem_t));
-    if (fread(SPU_ptr->byte_code, sizeof(byte_elem_t), SPU_ptr->byte_code_len, byte_code_stream) !=
-                                                        SPU_ptr->byte_code_len) {
-        PRINT_LINE();
-        fprintf_s(stderr, "fread failed\n");
-        CLEAR_RESOURCES();
-        return ferror(byte_code_stream);
-    }
+    CHECK_FUNC(My_fread, &SPU_ptr->byte_code_len, sizeof(SPU_ptr->byte_code_len), 1, byte_code_stream);
+    CHECK_FUNC(My_calloc, (void **)&SPU_ptr->byte_code,
+                          SPU_ptr->byte_code_len, sizeof(*SPU_ptr->byte_code));
+    CHECK_FUNC(My_fread, SPU_ptr->byte_code, sizeof(*SPU_ptr->byte_code), SPU_ptr->byte_code_len,
+                         byte_code_stream);
 
     SPU_ptr->is_valid          = true;
     ON_DEBUG(SPU_ptr->hash_val = SPU_hash(SPU_ptr);)
@@ -37,29 +54,21 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
         SPU_ptr->end_canary[i] = CANARY;
     }
 
-    CLEAR_RESOURCES();
     return 0;
 }
 
 void SPU_Dtor(SPU *const SPU_ptr) {
     assert(SPU_ptr);
 
-#undef FINAL_CODE
-#define FINAL_CODE
-
     My_stack_Dtor(&SPU_ptr->stack);
     free(SPU_ptr->byte_code);
     SPU_ptr->is_valid = false;
-
-    CLEAR_RESOURCES();
 }
 
 errno_t SPU_verify(SPU const *const SPU_ptr) {
     assert(SPU_ptr);
 
     errno_t err = 0;
-#undef FINAL_CODE
-#define FINAL_CODE
 
     err |= My_stack_verify(&SPU_ptr->stack);
 
@@ -76,18 +85,14 @@ errno_t SPU_verify(SPU const *const SPU_ptr) {
     if (!SPU_ptr->is_valid)      { err |= SPU_INVALID; }
     if (!SPU_ptr->byte_code)     { err |= STACK_NULL_BYTE_CODE; }
 
-    CLEAR_RESOURCES();
     return err;
 }
 
 void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
-              Position_info const from_where, errno_t const err) {
+              Position_info const from_where, errno_t const err) { //TODO - add tabulation
     assert(out_stream); assert(SPU_ptr);
     ON_DEBUG(assert(SPU_ptr->var_info.name); assert(SPU_ptr->var_info.position.file_name);)
     assert(from_where.file_name);
-
-#undef FINAL_CODE
-#define FINAL_CODE
 
     fprintf_s(out_stream, "called at file %s, line %d in \"%s\" function: ",
               from_where.file_name, from_where.line, from_where.function_name);
@@ -116,12 +121,8 @@ void SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     fprintf_s(out_stream, "\tbyte_code_len = %zu\n", SPU_ptr->byte_code_len);
 
     fprintf_s(out_stream, "\tbyte_code[%zu] = [%p] {\n", SPU_ptr->byte_code_len, SPU_ptr->byte_code);
-    for (size_t i = 0; i < SPU_ptr->byte_code_len; i += sizeof(stack_elem_t)) {
-        fprintf_s(out_stream, "\t\t");
-        for (size_t j = i; j < i + sizeof(stack_elem_t) and j < SPU_ptr->byte_code_len; ++j) {
-            fprintf_s(out_stream, "[%zu] = %hhX ", j, SPU_ptr->byte_code[j]);
-        }
-        fprintf_s(out_stream, "\n");
+    for (size_t i = 0; i < SPU_ptr->byte_code_len; ++i) {
+        fprintf_s(out_stream, "\t\t[%zu] = %zX\n", i, SPU_ptr->byte_code[i]);
     }
     fprintf_s(out_stream, "\t}\n");
 
