@@ -72,65 +72,26 @@ static errno_t POPR_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     return 0;
 }
 
-static errno_t ADD_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    ON_DEBUG(fprintf_s(stderr, "Trying to ADD " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
-    CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x + y);
-
-    return 0;
+#define MAKE_SIMPLE_BIN_EXECUTE(name, operation)                                                    \
+static errno_t name ## _execute(SPU *const SPU_ptr, size_t *const IC_ptr) {                         \
+    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);                     \
+    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)                                                      \
+                                                                                                    \
+    stack_elem_t x = {},                                                                            \
+                 y = {};                                                                            \
+    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);                                             \
+    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);                                             \
+    ON_DEBUG(fprintf_s(stderr, "Trying to " #name " " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n",       \
+                               x, y);)                                                              \
+    CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x operation y);                                 \
+                                                                                                    \
+    return 0;                                                                                       \
 }
 
-static errno_t SUB_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    ON_DEBUG(fprintf_s(stderr, "Trying to SUB " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
-    CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x - y);
-
-    return 0;
-}
-
-static errno_t MLT_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    ON_DEBUG(fprintf_s(stderr, "Trying to MLT " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
-    CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x * y);
-
-    return 0;
-}
-
-static errno_t DIV_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    ON_DEBUG(fprintf_s(stderr, "Trying to DIV " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
-    if (y == 0) { return EDOM; }
-    #pragma GCC diagnostic pop
-    CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x / y);
-
-    return 0;
-}
+MAKE_SIMPLE_BIN_EXECUTE(ADD, +)
+MAKE_SIMPLE_BIN_EXECUTE(SUB, -)
+MAKE_SIMPLE_BIN_EXECUTE(MLT, *)
+MAKE_SIMPLE_BIN_EXECUTE(DIV, /)
 
 static errno_t SQRT_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
@@ -139,7 +100,6 @@ static errno_t SQRT_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     stack_elem_t x = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
     ON_DEBUG(fprintf_s(stderr, "Trying to SQRT " STACK_ELEM_FRM "\n", x);)
-    if (x < 0) { return EDOM; }
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, sqrt(x));
 
     return 0;
@@ -154,7 +114,6 @@ static errno_t POW_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
     ON_DEBUG(fprintf_s(stderr, "Trying to POW " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
-    //TODO - make check
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, pow(x, y));
 
     return 0;
@@ -202,150 +161,41 @@ static errno_t JMP_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     return 0;
 }
 
-static errno_t JB_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    if (*IC_ptr >= SPU_ptr->byte_code_len) {
-        return NOT_ENOUGH_ARGUMENTS;
-    }
-    size_t pos = SPU_ptr->byte_code[(*IC_ptr)++].pos;
-    if (pos >= SPU_ptr->byte_code_len) {
-        return INVALID_POSITION;
-    }
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    ON_DEBUG(fprintf_s(stderr, "Trying to JB %zu " STACK_ELEM_FRM " < " STACK_ELEM_FRM "\n",
-                               pos, x, y);)
-    if (x < y) {
-        *IC_ptr = pos;
-    }
-
-    return 0;
+#define MAKE_COND_JUMP_EXECUTE(name, operation)                                                     \
+static errno_t name ## _execute(SPU *const SPU_ptr, size_t *const IC_ptr) {                         \
+    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);                     \
+    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)                                                      \
+                                                                                                    \
+    if (*IC_ptr >= SPU_ptr->byte_code_len) {                                                        \
+        return NOT_ENOUGH_ARGUMENTS;                                                                \
+    }                                                                                               \
+    size_t pos = SPU_ptr->byte_code[(*IC_ptr)++].pos;                                               \
+    if (pos >= SPU_ptr->byte_code_len) {                                                            \
+        return INVALID_POSITION;                                                                    \
+    }                                                                                               \
+    stack_elem_t x = {},                                                                            \
+                 y = {};                                                                            \
+    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);                                             \
+    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);                                             \
+    ON_DEBUG(fprintf_s(stderr, "Trying to " #name " %zu "                                           \
+                               STACK_ELEM_FRM " " #operation " " STACK_ELEM_FRM "\n",               \
+                               pos, x, y);)                                                         \
+    if (x operation y) {                                                                            \
+        *IC_ptr = pos;                                                                              \
+    }                                                                                               \
+                                                                                                    \
+    return 0;                                                                                       \
 }
 
-static errno_t JBE_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    if (*IC_ptr >= SPU_ptr->byte_code_len) {
-        return NOT_ENOUGH_ARGUMENTS;
-    }
-    size_t pos = SPU_ptr->byte_code[(*IC_ptr)++].pos;
-    if (pos >= SPU_ptr->byte_code_len) {
-        return INVALID_POSITION;
-    }
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to JBE %zu " STACK_ELEM_FRM " <= " STACK_ELEM_FRM "\n", pos, x, y);
-    if (x <= y) {
-        *IC_ptr = pos;
-    }
-
-    return 0;
-}
-
-static errno_t JA_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    if (*IC_ptr >= SPU_ptr->byte_code_len) {
-        return NOT_ENOUGH_ARGUMENTS;
-    }
-    size_t pos = SPU_ptr->byte_code[(*IC_ptr)++].pos;
-    if (pos >= SPU_ptr->byte_code_len) {
-        return INVALID_POSITION;
-    }
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to JA %zu " STACK_ELEM_FRM " > " STACK_ELEM_FRM "\n", pos, x, y);
-    if (x > y) {
-        *IC_ptr = pos;
-    }
-
-    return 0;
-}
-
-static errno_t JAE_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    if (*IC_ptr >= SPU_ptr->byte_code_len) {
-        return NOT_ENOUGH_ARGUMENTS;
-    }
-    size_t pos = SPU_ptr->byte_code[(*IC_ptr)++].pos;
-    if (pos >= SPU_ptr->byte_code_len) {
-        return INVALID_POSITION;
-    }
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to JAE %zu " STACK_ELEM_FRM " >= " STACK_ELEM_FRM "\n", pos, x, y);
-    if (x >= y) {
-        *IC_ptr = pos;
-    }
-
-    return 0;
-}
-
-static errno_t JE_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    if (*IC_ptr >= SPU_ptr->byte_code_len) {
-        return NOT_ENOUGH_ARGUMENTS;
-    }
-    size_t pos = SPU_ptr->byte_code[(*IC_ptr)++].pos;
-    if (pos >= SPU_ptr->byte_code_len) {
-        return INVALID_POSITION;
-    }
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to JE %zu " STACK_ELEM_FRM " == " STACK_ELEM_FRM "\n", pos, x, y);
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
-    if (x == y) {
-        *IC_ptr = pos;
-    }
-    #pragma GCC diagnostic pop
-
-    return 0;
-}
-
-static errno_t JNE_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
-    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
-    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
-
-    if (*IC_ptr >= SPU_ptr->byte_code_len) {
-        return NOT_ENOUGH_ARGUMENTS;
-    }
-    size_t pos = SPU_ptr->byte_code[(*IC_ptr)++].pos;
-    if (pos >= SPU_ptr->byte_code_len) {
-        return INVALID_POSITION;
-    }
-    stack_elem_t x = {},
-                 y = {};
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
-    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to JNE %zu " STACK_ELEM_FRM " != " STACK_ELEM_FRM "\n", pos, x, y);
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
-    if (x != y) {
-        *IC_ptr = pos;
-    }
-    #pragma GCC diagnostic pop
-
-    return 0;
-}
+MAKE_COND_JUMP_EXECUTE(JB, <)
+MAKE_COND_JUMP_EXECUTE(JBE, <=)
+MAKE_COND_JUMP_EXECUTE(JA, >)
+MAKE_COND_JUMP_EXECUTE(JAE, >=)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+MAKE_COND_JUMP_EXECUTE(JE, ==)
+MAKE_COND_JUMP_EXECUTE(JNE, !=)
+#pragma GCC diagnostic pop
 
 static errno_t CALL_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
