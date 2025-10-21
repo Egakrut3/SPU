@@ -25,7 +25,7 @@ uint64_t SPU_hash(SPU const *const SPU_ptr) {
     for (size_t i = 0; i < REGS_NUM; ++i) {
         cur_hash = cur_hash * SPU_HASH_MLT + *(const uint64_t *)&SPU_ptr->regs[i];
     }
-    for (size_t i = 0; i < SPU_MEM_SIZE; ++i) {
+    for (size_t i = 0; i < SPU_MEM_SIZE_SQRT * SPU_MEM_SIZE_SQRT; ++i) {
         cur_hash = cur_hash * SPU_HASH_MLT + *(const uint64_t *)&SPU_ptr->memory[i];
     }
     cur_hash = cur_hash * SPU_HASH_MLT + SPU_ptr->is_valid;
@@ -158,8 +158,8 @@ errno_t SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     fprintf_s(out_stream, "%s\t}\n", tab_str);
 
     fprintf_s(out_stream, "%s\tmemory[%zu] = [%p] {\n", tab_str,
-                          SPU_MEM_SIZE, SPU_ptr->memory);
-    for (size_t i = 0; i < SPU_MEM_SIZE; ++i) {
+                          SPU_MEM_SIZE_SQRT * SPU_MEM_SIZE_SQRT, SPU_ptr->memory);
+    for (size_t i = 0; i < SPU_MEM_SIZE_SQRT * SPU_MEM_SIZE_SQRT; ++i) {
         fprintf_s(out_stream, "%s\t\t[%zu] = " STACK_ELEM_FRM "\n", tab_str, i, SPU_ptr->memory[i]);
     }
     fprintf_s(out_stream, "%s\t}\n", tab_str);

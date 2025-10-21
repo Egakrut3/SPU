@@ -14,7 +14,7 @@ size_t const SPU_CANARY_NUM = 0;
 uint64_t const SPU_START_HASH   = 5683; static_assert(SPU_START_HASH & 1);
 uint64_t const SPU_HASH_MLT     = 985;  static_assert(SPU_HASH_MLT & 1);
 
-size_t const SPU_MEM_SIZE = 100;
+size_t const SPU_MEM_SIZE_SQRT = 10;
 
 struct SPU {
     size_t            beg_canary[SPU_CANARY_NUM];
@@ -25,7 +25,7 @@ struct SPU {
     size_t            byte_code_len;
     Assembler_elem    *byte_code;
     stack_elem_t      regs[REGS_NUM];
-    stack_elem_t      memory[SPU_MEM_SIZE];
+    stack_elem_t      memory[SPU_MEM_SIZE_SQRT * SPU_MEM_SIZE_SQRT];
     ON_DEBUG(uint64_t hash_val;)
 
     bool              is_valid;

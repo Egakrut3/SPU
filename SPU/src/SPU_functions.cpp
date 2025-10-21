@@ -378,7 +378,7 @@ static errno_t PUSHM_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
         return INVALID_REGISTER;
     }
     size_t index = SPU_ptr->regs[reg];
-    if (index >= SPU_MEM_SIZE) {
+    if (index >= SPU_MEM_SIZE_SQRT * SPU_MEM_SIZE_SQRT) {
         return INVALID_INDEX;
     }
     fprintf_s(stderr, "Trying to PUSHM r%hhu with index = %zu\n", reg, index);
@@ -399,11 +399,27 @@ static errno_t POPM_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
         return INVALID_REGISTER;
     }
     size_t index = SPU_ptr->regs[reg];
-    if (index >= SPU_MEM_SIZE) {
+    if (index >= SPU_MEM_SIZE_SQRT * SPU_MEM_SIZE_SQRT) {
         return INVALID_INDEX;
     }
     fprintf_s(stderr, "Trying to POPM r%hhu with index = %zu\n", reg, index);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &SPU_ptr->memory[index]);
+
+    return 0;
+}
+
+static errno_t DRAW_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
+    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
+    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
+
+
+    fprintf_s(stderr, "Trying to DRAW\n");
+    for (size_t i = 0; i < SPU_MEM_SIZE_SQRT; ++i) {
+        for (size_t j = 0; j < SPU_MEM_SIZE_SQRT; ++j) {
+            printf_s("%c", (char)SPU_ptr->memory[i * SPU_MEM_SIZE_SQRT + j]);
+        }
+        printf_s("\n");
+    }
 
     return 0;
 }
@@ -417,7 +433,7 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
         byte_elem_t const cur_command = SPU_ptr->byte_code[IC++].command;
 
         switch (cur_command) {
-            case HLT_COMMAND:
+            case HLT_COMMAND: //TODO - possible macros
                 CHECK_FUNC(HLT_execute, SPU_ptr, &IC);
                 break;
 
@@ -513,6 +529,10 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                 CHECK_FUNC(POPM_execute, SPU_ptr, &IC);
                 break;
 
+            case DRAW_COMMAND:
+                CHECK_FUNC(DRAW_execute, SPU_ptr, &IC);
+                break;
+
             case __ASM_COMMAND_COUNT:
             default:
                 return UNKNOWN_ASM_COMMAND;
@@ -522,7 +542,7 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
 
         if (cur_command == HLT_COMMAND) {
             if (SPU_ptr->calc_stack.size) { return STACK_NOT_EMPTY_AFTER_EXECUTION; }
-            else                     { return 0; }
+            else                          { return 0; }
         }
     }
 

@@ -116,6 +116,8 @@ static errno_t get_arg(Assembler const *const asm_ptr, size_t *const cur_char_pt
         CHECK_COMMAND(PUSHM);
         CHECK_COMMAND(POPM);
 
+        CHECK_COMMAND(DRAW);
+
         #undef CHECK_COMMAND
 
         return UNKNOWN_ASM_COMMAND;
@@ -265,6 +267,8 @@ MAKE_SIMPLE_COMPILATE(RET)
 MAKE_REG_COMPILATE(PUSHM)
 MAKE_REG_COMPILATE(POPM)
 
+MAKE_SIMPLE_COMPILATE(DRAW)
+
 errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
                                 ON_DEBUG(, FILE *const text_byte_code_stream)) {
     assert(code_stream); assert(byte_code_stream);
@@ -303,7 +307,7 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
         CHECK_FUNC(get_arg, &cur_asm, &cur_char, &arg);
         if (arg.type == COMMAND_TYPE) {
             switch (arg.elem.command) {
-                case HLT_COMMAND:
+                case HLT_COMMAND: //TODO - possible macros
                     CHECK_FUNC(HLT_compilate, &cur_asm, &cur_char);
                     break;
 
@@ -397,6 +401,10 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
 
                 case POPM_COMMAND:
                     CHECK_FUNC(POPM_compilate, &cur_asm, &cur_char);
+                    break;
+
+                case DRAW_COMMAND:
+                    CHECK_FUNC(DRAW_compilate, &cur_asm, &cur_char);
                     break;
 
                 case __ASM_COMMAND_COUNT:

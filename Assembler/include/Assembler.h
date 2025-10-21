@@ -76,6 +76,8 @@ enum Asm_command_code : byte_elem_t {
     PUSHM_COMMAND,
     POPM_COMMAND,
 
+    DRAW_COMMAND,
+
     __ASM_COMMAND_COUNT,
 };
 
