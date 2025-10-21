@@ -4,10 +4,11 @@
 #include "Common.h"
 #include "My_stack.h"
 
-#define BYTE_CODE_TOO_LONG  1'001
-#define UNKNOWN_ASM_COMMAND 1'002
-#define INVALID_REGISTER    1'003
-#define INVALID_LABEL       1'004
+#define UNKNOWN_ASM_COMMAND 1'000
+#define INVALID_REGISTER    1'001
+#define INVALID_LABEL       1'002
+#define UNKNOWN_ASM_TYPE    1'003
+#define BYTE_CODE_TOO_LONG  1'004
 
 union Assembler_elem {
     byte_elem_t  command;
@@ -19,12 +20,12 @@ union Assembler_elem {
 
 size_t const BYTE_CODE_MAX_LEN   = 0X1000;
 
-size_t const LABELS_COUNT = 10;
+size_t const LABELS_NUM = 10;
 size_t const REGS_NUM = 4;
 size_t const DEFAULT_POSITION = ~0u;
 
 struct Assembler {
-    size_t         labels[LABELS_COUNT];
+    size_t         labels[LABELS_NUM];
     size_t         code_len;
     char           *code;
     size_t         byte_code_len;
@@ -68,6 +69,12 @@ enum Asm_command_code : byte_elem_t {
     JAE_COMMAND,
     JE_COMMAND,
     JNE_COMMAND,
+
+    CALL_COMMAND,
+    RET_COMMAND,
+
+    PUSHM_COMMAND,
+    POPM_COMMAND,
 
     __ASM_COMMAND_COUNT,
 };

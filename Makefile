@@ -8,7 +8,7 @@ SRC_SUF = .cpp
 make_src_path = $(addprefix $(SRC_DIR), $(addsuffix $(SRC_SUF), $(1)))
 make_dir_src_path = $(addprefix $(1), $(call make_src_path, $(2)))
 
-H_DIR = ./Assembler/include/ ./Disassembler/include ./SPU/include/ ./Others/include/
+H_DIR = ./Assembler/include/ ./SPU/include/ ./Others/include/
 
 LIB_DIR = static_libs/
 LIBS = Colored_printf My_stack
@@ -25,7 +25,6 @@ CXX_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 TARGET = $(addprefix ./bin/, Assembler.exe)
 
 Assembler_OBJ = Assembler_basic Assembler_functions
-Disassembler_OBJ = Disassembler
 SPU_OBJ = SPU_basic SPU_functions
 Others_OBJ = Common main
 
@@ -47,13 +46,11 @@ all : prepare $(call make_dir_bin_path, ./Assembler/, $(Assembler_OBJ))			\
 	@$(TARGET)
 
 prepare :
-	@mkdir -p ./Assembler/bin/ ./Disassembler/bin/ ./SPU/bin/ ./Others/bin/ ./bin/
+	@mkdir -p ./bin/ ./Assembler/bin/ ./SPU/bin/ ./Others/bin/
 
 $(call make_dir_object, ./Assembler/, Assembler_basic)
 
 $(call make_dir_object, ./Assembler/, Assembler_functions)
-
-#$(call make_dir_object, ./Disassembler/, Disassembler)
 
 $(call make_dir_object, ./SPU/, SPU_basic)
 
@@ -64,5 +61,5 @@ $(call make_dir_object, ./Others/, main)
 $(call make_dir_object, ./Others/, Common)
 
 clean:
-	@rm -rf ./Assembler/bin/ ./Disassembler/bin/ ./SPU/bin/ ./Others/bin/ ./bin/	\
-	Byte_code Text_byte_code.txt Dis_code.txt
+	@rm -rf ./bin/ ./Assembler/bin/ ./SPU/bin/ ./Others/bin/	\
+	Byte_code Text_byte_code.txt

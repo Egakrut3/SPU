@@ -8,7 +8,7 @@ static size_t const ASM_TOKEN_MAX_LEN = 5;
 errno_t Assembler_Ctor(Assembler *const asm_ptr, FILE *const code_stream) {
     assert(asm_ptr); assert(!asm_ptr->is_valid); assert(code_stream);
 
-    for (size_t i = 0; i < LABELS_COUNT; ++i) {
+    for (size_t i = 0; i < LABELS_NUM; ++i) {
         asm_ptr->labels[i] = DEFAULT_POSITION;
     }
 
