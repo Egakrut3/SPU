@@ -22,7 +22,7 @@ CXX_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing -Wstrict-null-sentinel -Wtype-limits           \
 -Wwrite-strings -Werror=vla -D_EJUDGE_CLIENT_SIDE -D__USE_MINGW_ANSI_STDIO -D_DEBUG
 
-TARGET = $(addprefix ./bin/, Assembler.exe)
+TARGET = $(addprefix ./bin/, SPU.exe)
 
 Assembler_OBJ = Assembler_basic Assembler_functions
 SPU_OBJ = SPU_basic SPU_functions

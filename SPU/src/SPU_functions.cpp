@@ -8,7 +8,7 @@ static errno_t HLT_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
     ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
 
-    fprintf_s(stderr, "Finishing execution\n");
+    ON_DEBUG(fprintf_s(stderr, "Finishing execution\n");)
 
     return 0;
 }
@@ -21,7 +21,7 @@ static errno_t PUSH_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
         return NOT_ENOUGH_ARGUMENTS;
     }
     stack_elem_t x = SPU_ptr->byte_code[(*IC_ptr)++].val;
-    fprintf_s(stderr, "Trying to PUSH " STACK_ELEM_FRM "\n", x);
+    ON_DEBUG(fprintf_s(stderr, "Trying to PUSH " STACK_ELEM_FRM "\n", x);)
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x);
 
     return 0;
@@ -38,7 +38,8 @@ static errno_t PUSHR_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     if (reg >= REGS_NUM) {
         return INVALID_REGISTER;
     }
-    fprintf_s(stderr, "Trying to PUSHR r%hhu(" STACK_ELEM_FRM ")\n", reg, SPU_ptr->regs[reg]);
+    ON_DEBUG(fprintf_s(stderr, "Trying to PUSHR r%hhu(" STACK_ELEM_FRM ")\n",
+                               reg, SPU_ptr->regs[reg]);)
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, SPU_ptr->regs[reg]);
 
     return 0;
@@ -48,7 +49,7 @@ static errno_t POP_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
     ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
 
-    fprintf_s(stderr, "Trying to POP\n");
+    ON_DEBUG(fprintf_s(stderr, "Trying to POP\n");)
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, nullptr);
 
     return 0;
@@ -65,7 +66,7 @@ static errno_t POPR_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     if (reg >= REGS_NUM) {
         return INVALID_REGISTER;
     }
-    fprintf_s(stderr, "Trying to POPR r%hhu\n", reg);
+    ON_DEBUG(fprintf_s(stderr, "Trying to POPR r%hhu\n", reg);)
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &SPU_ptr->regs[reg]);
 
     return 0;
@@ -79,7 +80,7 @@ static errno_t ADD_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
                  y = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to ADD " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);
+    ON_DEBUG(fprintf_s(stderr, "Trying to ADD " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x + y);
 
     return 0;
@@ -93,7 +94,7 @@ static errno_t SUB_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
                  y = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to SUB " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);
+    ON_DEBUG(fprintf_s(stderr, "Trying to SUB " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x - y);
 
     return 0;
@@ -107,7 +108,7 @@ static errno_t MLT_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
                  y = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to MLT " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);
+    ON_DEBUG(fprintf_s(stderr, "Trying to MLT " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x * y);
 
     return 0;
@@ -121,8 +122,11 @@ static errno_t DIV_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
                  y = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to DIV " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);
+    ON_DEBUG(fprintf_s(stderr, "Trying to DIV " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
     if (y == 0) { return EDOM; }
+    #pragma GCC diagnostic pop
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, x / y);
 
     return 0;
@@ -134,7 +138,7 @@ static errno_t SQRT_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
 
     stack_elem_t x = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to SQRT " STACK_ELEM_FRM "\n", x);
+    ON_DEBUG(fprintf_s(stderr, "Trying to SQRT " STACK_ELEM_FRM "\n", x);)
     if (x < 0) { return EDOM; }
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, sqrt(x));
 
@@ -149,7 +153,7 @@ static errno_t POW_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
                  y = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to POW " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);
+    ON_DEBUG(fprintf_s(stderr, "Trying to POW " STACK_ELEM_FRM " " STACK_ELEM_FRM "\n", x, y);)
     //TODO - make check
     CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, pow(x, y));
 
@@ -213,7 +217,8 @@ static errno_t JB_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
                  y = {};
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
-    fprintf_s(stderr, "Trying to JB %zu " STACK_ELEM_FRM " < " STACK_ELEM_FRM "\n", pos, x, y);
+    ON_DEBUG(fprintf_s(stderr, "Trying to JB %zu " STACK_ELEM_FRM " < " STACK_ELEM_FRM "\n",
+                               pos, x, y);)
     if (x < y) {
         *IC_ptr = pos;
     }
@@ -306,9 +311,12 @@ static errno_t JE_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
     fprintf_s(stderr, "Trying to JE %zu " STACK_ELEM_FRM " == " STACK_ELEM_FRM "\n", pos, x, y);
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
     if (x == y) {
         *IC_ptr = pos;
     }
+    #pragma GCC diagnostic pop
 
     return 0;
 }
@@ -329,9 +337,12 @@ static errno_t JNE_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &y);
     CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &x);
     fprintf_s(stderr, "Trying to JNE %zu " STACK_ELEM_FRM " != " STACK_ELEM_FRM "\n", pos, x, y);
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
     if (x != y) {
         *IC_ptr = pos;
     }
+    #pragma GCC diagnostic pop
 
     return 0;
 }
@@ -361,7 +372,7 @@ static errno_t RET_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     stack_elem_t pos = {};
     fprintf_s(stderr, "Trying to RET\n");
     CHECK_FUNC(My_stack_pop, &SPU_ptr->call_stack, &pos);
-    *IC_ptr = pos;
+    *IC_ptr = (size_t)pos;
 
     return 0;
 }
@@ -377,7 +388,7 @@ static errno_t PUSHM_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     if (reg >= REGS_NUM) {
         return INVALID_REGISTER;
     }
-    size_t index = SPU_ptr->regs[reg];
+    size_t index = (size_t)SPU_ptr->regs[reg];
     if (index >= SPU_MEM_SIZE_SQRT * SPU_MEM_SIZE_SQRT) {
         return INVALID_INDEX;
     }
@@ -398,7 +409,7 @@ static errno_t POPM_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     if (reg >= REGS_NUM) {
         return INVALID_REGISTER;
     }
-    size_t index = SPU_ptr->regs[reg];
+    size_t index = (size_t)SPU_ptr->regs[reg];
     if (index >= SPU_MEM_SIZE_SQRT * SPU_MEM_SIZE_SQRT) {
         return INVALID_INDEX;
     }
@@ -432,8 +443,8 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
     while (IC < SPU_ptr->byte_code_len) {
         byte_elem_t const cur_command = SPU_ptr->byte_code[IC++].command;
 
-        switch (cur_command) {
-            case HLT_COMMAND: //TODO - possible macros
+        switch (cur_command) { //TODO - make function-array
+            case HLT_COMMAND:  //TODO - possible macros
                 CHECK_FUNC(HLT_execute, SPU_ptr, &IC);
                 break;
 
