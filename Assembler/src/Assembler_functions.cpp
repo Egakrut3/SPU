@@ -113,6 +113,9 @@ static errno_t get_arg(Assembler const *const asm_ptr, size_t *const cur_char_pt
         CHECK_COMMAND(CALL);
         CHECK_COMMAND(RET);
 
+        CHECK_COMMAND(PUSHM);
+        CHECK_COMMAND(POPM);
+
         #undef CHECK_COMMAND
 
         return UNKNOWN_ASM_COMMAND;
@@ -259,6 +262,9 @@ MAKE_JUMP_COMPILATE(JNE)
 MAKE_JUMP_COMPILATE(CALL)
 MAKE_SIMPLE_COMPILATE(RET)
 
+MAKE_REG_COMPILATE(PUSHM)
+MAKE_REG_COMPILATE(POPM)
+
 errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
                                 ON_DEBUG(, FILE *const text_byte_code_stream)) {
     assert(code_stream); assert(byte_code_stream);
@@ -383,6 +389,14 @@ errno_t compilate(FILE *const code_stream, FILE *const byte_code_stream
 
                 case RET_COMMAND:
                     CHECK_FUNC(RET_compilate, &cur_asm, &cur_char);
+                    break;
+
+                case PUSHM_COMMAND:
+                    CHECK_FUNC(PUSHM_compilate, &cur_asm, &cur_char);
+                    break;
+
+                case POPM_COMMAND:
+                    CHECK_FUNC(POPM_compilate, &cur_asm, &cur_char);
                     break;
 
                 case __ASM_COMMAND_COUNT:

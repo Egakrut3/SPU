@@ -21,7 +21,7 @@ union Assembler_elem {
 size_t const BYTE_CODE_MAX_LEN   = 0X1000;
 
 size_t const LABELS_NUM = 10;
-size_t const REGS_NUM = 4;
+size_t const REGS_NUM = 16;
 size_t const DEFAULT_POSITION = ~0u;
 
 struct Assembler {

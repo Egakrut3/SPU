@@ -366,6 +366,48 @@ static errno_t RET_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
     return 0;
 }
 
+static errno_t PUSHM_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
+    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
+    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
+
+    if (*IC_ptr >= SPU_ptr->byte_code_len) {
+        return NOT_ENOUGH_ARGUMENTS;
+    }
+    byte_elem_t reg = SPU_ptr->byte_code[(*IC_ptr)++].reg;
+    if (reg >= REGS_NUM) {
+        return INVALID_REGISTER;
+    }
+    size_t index = SPU_ptr->regs[reg];
+    if (index >= SPU_MEM_SIZE) {
+        return INVALID_INDEX;
+    }
+    fprintf_s(stderr, "Trying to PUSHM r%hhu with index = %zu\n", reg, index);
+    CHECK_FUNC(My_stack_push, &SPU_ptr->calc_stack, SPU_ptr->memory[index]);
+
+    return 0;
+}
+
+static errno_t POPM_execute(SPU *const SPU_ptr, size_t *const IC_ptr) {
+    assert(IC_ptr); assert(SPU_ptr); assert(*IC_ptr <= SPU_ptr->byte_code_len);
+    ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
+
+    if (*IC_ptr >= SPU_ptr->byte_code_len) {
+        return NOT_ENOUGH_ARGUMENTS;
+    }
+    byte_elem_t reg = SPU_ptr->byte_code[(*IC_ptr)++].reg;
+    if (reg >= REGS_NUM) {
+        return INVALID_REGISTER;
+    }
+    size_t index = SPU_ptr->regs[reg];
+    if (index >= SPU_MEM_SIZE) {
+        return INVALID_INDEX;
+    }
+    fprintf_s(stderr, "Trying to POPM r%hhu with index = %zu\n", reg, index);
+    CHECK_FUNC(My_stack_pop, &SPU_ptr->calc_stack, &SPU_ptr->memory[index]);
+
+    return 0;
+}
+
 errno_t SPU_execute(SPU *const SPU_ptr) {
     assert(SPU_ptr);
     ON_DEBUG(CHECK_FUNC(SPU_verify, SPU_ptr);)
@@ -461,6 +503,14 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
 
             case RET_COMMAND:
                 CHECK_FUNC(RET_execute, SPU_ptr, &IC);
+                break;
+
+            case PUSHM_COMMAND:
+                CHECK_FUNC(PUSHM_execute, SPU_ptr, &IC);
+                break;
+
+            case POPM_COMMAND:
+                CHECK_FUNC(POPM_execute, SPU_ptr, &IC);
                 break;
 
             case __ASM_COMMAND_COUNT:

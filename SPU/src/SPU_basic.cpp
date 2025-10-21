@@ -9,6 +9,7 @@ uint64_t SPU_hash(SPU const *const SPU_ptr) {
     uint64_t cur_hash = SPU_START_HASH;
 
     cur_hash = cur_hash * SPU_HASH_MLT + My_stack_hash(&SPU_ptr->calc_stack);
+    cur_hash = cur_hash * SPU_HASH_MLT + My_stack_hash(&SPU_ptr->call_stack);
 
     ON_DEBUG(cur_hash = cur_hash * SPU_HASH_MLT +
                         (uint64_t)SPU_ptr->var_info.position.file_name;)
@@ -23,6 +24,9 @@ uint64_t SPU_hash(SPU const *const SPU_ptr) {
     cur_hash = cur_hash * SPU_HASH_MLT + (uint64_t)SPU_ptr->byte_code;
     for (size_t i = 0; i < REGS_NUM; ++i) {
         cur_hash = cur_hash * SPU_HASH_MLT + *(const uint64_t *)&SPU_ptr->regs[i];
+    }
+    for (size_t i = 0; i < SPU_MEM_SIZE; ++i) {
+        cur_hash = cur_hash * SPU_HASH_MLT + *(const uint64_t *)&SPU_ptr->memory[i];
     }
     cur_hash = cur_hash * SPU_HASH_MLT + SPU_ptr->is_valid;
 
@@ -146,8 +150,24 @@ errno_t SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     }
     fprintf_s(out_stream, "%s\t}\n", tab_str);
 
+    fprintf_s(out_stream, "%s\tregs[%zu] = [%p] {\n", tab_str,
+                          REGS_NUM, SPU_ptr->regs);
+    for (size_t i = 0; i < REGS_NUM; ++i) {
+        fprintf_s(out_stream, "%s\t\t[%zu] = " STACK_ELEM_FRM "\n", tab_str, i, SPU_ptr->regs[i]);
+    }
+    fprintf_s(out_stream, "%s\t}\n", tab_str);
+
+    fprintf_s(out_stream, "%s\tmemory[%zu] = [%p] {\n", tab_str,
+                          SPU_MEM_SIZE, SPU_ptr->memory);
+    for (size_t i = 0; i < SPU_MEM_SIZE; ++i) {
+        fprintf_s(out_stream, "%s\t\t[%zu] = " STACK_ELEM_FRM "\n", tab_str, i, SPU_ptr->memory[i]);
+    }
+    fprintf_s(out_stream, "%s\t}\n", tab_str);
+
     ON_DEBUG(fprintf_s(out_stream, "%s\thash_val = %llX, must be %llX\n", tab_str, SPU_ptr->hash_val,
                                                                                    SPU_hash(SPU_ptr)));
+
+
     fprintf_s(out_stream, "%s\tis_valid = %d\n", tab_str, SPU_ptr->is_valid);
 
     fprintf_s(out_stream, "%s\tend_canary[%zu] = [%p] {\n", tab_str, SPU_CANARY_NUM, SPU_ptr->end_canary);
@@ -157,7 +177,7 @@ errno_t SPU_dump(FILE *const out_stream, SPU const *const SPU_ptr,
     fprintf_s(out_stream, "%s\t}\n", tab_str);
 
     fprintf_s(out_stream, "%s}\n", tab_str);
-    
+
     CLEAR_RESOURCES();
     return 0;
 }
