@@ -292,9 +292,6 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
     size_t IC = 0;
     while (IC < SPU_ptr->byte_code_len) {
         byte_elem_t const cur_command = SPU_ptr->byte_code[IC++].command;
-        if (cur_command >= __ASM_COMMAND_COUNT) {
-            return UNKNOWN_ASM_COMMAND;
-        }
 
         #undef HANDLE_COMMAND
         #define HANDLE_COMMAND(name)                                \
@@ -303,12 +300,12 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                 break;
 
         switch(cur_command) {
-            //TODO - 
+            //TODO -
             #include "Command_list.h"
 
             case __ASM_COMMAND_COUNT:
             default:
-                abort(); //TODO -
+                return UNKNOWN_ASM_COMMAND;
         }
         SPU_ptr->hash_val = SPU_hash(SPU_ptr);
 
