@@ -303,7 +303,6 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
             //TODO -
             #include "Command_list.h"
 
-            case __ASM_COMMAND_COUNT:
             default:
                 return UNKNOWN_ASM_COMMAND;
         }

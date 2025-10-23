@@ -274,7 +274,6 @@ static errno_t parse_commands(Assembler *const asm_ptr) {
                 //TODO -
                 #include "Command_list.h"
 
-                case __ASM_COMMAND_COUNT:
                 default:
                     return UNKNOWN_ASM_COMMAND;
             }

@@ -49,8 +49,6 @@ name ## _COMMAND,
 enum Asm_command_code : byte_elem_t {
     //TODO -
     #include "Command_list.h"
-
-    __ASM_COMMAND_COUNT,
 };
 
 errno_t compilate(FILE *code_stream, FILE *byte_code_stream
