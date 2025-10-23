@@ -1,8 +1,6 @@
 #include "Common.h"
 #include "Assembler.h"
 #include "SPU.h"
-//TODO - modify Makefile
-//TODO - how to add Common to both projects
 
 int main(int const argc, char const *const *const argv) {
     assert(argc > 0); assert(argv); assert(*argv);
