@@ -292,113 +292,24 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
     size_t IC = 0;
     while (IC < SPU_ptr->byte_code_len) {
         byte_elem_t const cur_command = SPU_ptr->byte_code[IC++].command;
+        if (cur_command >= __ASM_COMMAND_COUNT) {
+            return UNKNOWN_ASM_COMMAND;
+        }
 
-        switch (cur_command) { //TODO - make function-array
-            case HLT_COMMAND:  //TODO - possible macros
-                CHECK_FUNC(HLT_execute, SPU_ptr, &IC);
+        #undef HANDLE_COMMAND
+        #define HANDLE_COMMAND(name)                                \
+        case name ## _COMMAND:                                      \
+                CHECK_FUNC(name ## _execute, SPU_ptr, &IC);   \
                 break;
 
-            case PUSH_COMMAND:
-                CHECK_FUNC(PUSH_execute, SPU_ptr, &IC);
-                break;
-
-            case PUSHR_COMMAND:
-                CHECK_FUNC(PUSHR_execute, SPU_ptr, &IC);
-                break;
-
-            case POP_COMMAND:
-                CHECK_FUNC(POP_execute, SPU_ptr, &IC);
-                break;
-
-            case POPR_COMMAND:
-                CHECK_FUNC(POPR_execute, SPU_ptr, &IC);
-                break;
-
-            case ADD_COMMAND:
-                CHECK_FUNC(ADD_execute, SPU_ptr, &IC);
-                break;
-
-            case SUB_COMMAND:
-                CHECK_FUNC(SUB_execute, SPU_ptr, &IC);
-                break;
-
-            case MLT_COMMAND:
-                CHECK_FUNC(MLT_execute, SPU_ptr, &IC);
-                break;
-
-            case DIV_COMMAND:
-                CHECK_FUNC(DIV_execute, SPU_ptr, &IC);
-                break;
-
-            case SQRT_COMMAND:
-                CHECK_FUNC(SQRT_execute, SPU_ptr, &IC);
-                break;
-
-            case POW_COMMAND:
-                CHECK_FUNC(POW_execute, SPU_ptr, &IC);
-                break;
-
-            case IN_COMMAND:
-                CHECK_FUNC(IN_execute, SPU_ptr, &IC);
-                break;
-
-            case OUT_COMMAND:
-                CHECK_FUNC(OUT_execute, SPU_ptr, &IC);
-                break;
-
-            case JMP_COMMAND:
-                CHECK_FUNC(JMP_execute, SPU_ptr, &IC);
-                break;
-
-            case JB_COMMAND:
-                CHECK_FUNC(JB_execute, SPU_ptr, &IC);
-                break;
-
-            case JBE_COMMAND:
-                CHECK_FUNC(JBE_execute, SPU_ptr, &IC);
-                break;
-
-            case JA_COMMAND:
-                CHECK_FUNC(JA_execute, SPU_ptr, &IC);
-                break;
-
-            case JAE_COMMAND:
-                CHECK_FUNC(JAE_execute, SPU_ptr, &IC);
-                break;
-
-            case JE_COMMAND:
-                CHECK_FUNC(JE_execute, SPU_ptr, &IC);
-                break;
-
-            case JNE_COMMAND:
-                CHECK_FUNC(JNE_execute, SPU_ptr, &IC);
-                break;
-
-            case CALL_COMMAND:
-                CHECK_FUNC(CALL_execute, SPU_ptr, &IC);
-                break;
-
-            case RET_COMMAND:
-                CHECK_FUNC(RET_execute, SPU_ptr, &IC);
-                break;
-
-            case PUSHM_COMMAND:
-                CHECK_FUNC(PUSHM_execute, SPU_ptr, &IC);
-                break;
-
-            case POPM_COMMAND:
-                CHECK_FUNC(POPM_execute, SPU_ptr, &IC);
-                break;
-
-            case DRAW_COMMAND:
-                CHECK_FUNC(DRAW_execute, SPU_ptr, &IC);
-                break;
+        switch(cur_command) {
+            //TODO - 
+            #include "Command_list.h"
 
             case __ASM_COMMAND_COUNT:
             default:
-                return UNKNOWN_ASM_COMMAND;
+                abort(); //TODO -
         }
-
         SPU_ptr->hash_val = SPU_hash(SPU_ptr);
 
         if (cur_command == HLT_COMMAND) {

@@ -72,58 +72,23 @@ static errno_t get_arg(Assembler const *const asm_ptr, size_t *const cur_char_pt
     }
 
     char cur_command[ASM_COMMAND_MAX_LEN + 1] = {};
-    if (sscanf_s(asm_ptr->code + *cur_char_ptr, "%s %zn", cur_command, ASM_COMMAND_MAX_LEN + 1,
-                                                         &extra_len)) {
-        *cur_char_ptr += extra_len;
+    CHECK_FUNC(My_sscanf_s, 1, asm_ptr->code + *cur_char_ptr, "%s %zn",
+                               cur_command, ASM_COMMAND_MAX_LEN + 1, &extra_len);
+    *cur_char_ptr += extra_len;
 
-        #define CHECK_COMMAND(name)                     \
-        if (!strcmp(cur_command, #name)) {              \
-            arg_ptr->elem.command = name ## _COMMAND;   \
-                                                        \
-            arg_ptr->type = COMMAND_TYPE;               \
-            return 0;                                   \
-        }
-
-        CHECK_COMMAND(HLT);
-
-        CHECK_COMMAND(PUSH);
-        CHECK_COMMAND(PUSHR);
-        CHECK_COMMAND(POP);
-        CHECK_COMMAND(POPR);
-
-        CHECK_COMMAND(ADD);
-        CHECK_COMMAND(SUB);
-        CHECK_COMMAND(MLT);
-        CHECK_COMMAND(DIV);
-
-        CHECK_COMMAND(SQRT);
-        CHECK_COMMAND(POW);
-
-        CHECK_COMMAND(IN);
-        CHECK_COMMAND(OUT);
-
-        CHECK_COMMAND(JMP);
-        CHECK_COMMAND(JB);
-        CHECK_COMMAND(JBE);
-        CHECK_COMMAND(JA);
-        CHECK_COMMAND(JAE);
-        CHECK_COMMAND(JE);
-        CHECK_COMMAND(JNE);
-
-        CHECK_COMMAND(CALL);
-        CHECK_COMMAND(RET);
-
-        CHECK_COMMAND(PUSHM);
-        CHECK_COMMAND(POPM);
-
-        CHECK_COMMAND(DRAW);
-
-        #undef CHECK_COMMAND
-
-        return UNKNOWN_ASM_COMMAND;
+    #undef HANDLE_COMMAND
+    #define HANDLE_COMMAND(name)                    \
+    if (!strcmp(cur_command, #name)) {              \
+        arg_ptr->elem.command = name ## _COMMAND;   \
+                                                    \
+        arg_ptr->type = COMMAND_TYPE;               \
+        return 0;                                   \
     }
 
-    return UNKNOWN_ASM_TYPE;
+    //TODO -
+    #include "Command_list.h"
+
+    return UNKNOWN_ASM_COMMAND;
 }
 
 #define MAKE_SIMPLE_COMPILATE(name)                                                                     \
@@ -235,6 +200,7 @@ static errno_t name ## _compilate(Assembler *const asm_ptr, size_t *const cur_ch
     return 0;                                                                                           \
 }
 
+//TODO - possible include
 MAKE_SIMPLE_COMPILATE(HLT)
 
 MAKE_VAL_COMPILATE(PUSH)
@@ -297,106 +263,16 @@ static errno_t parse_commands(Assembler *const asm_ptr) {
         Asm_arg arg = {};
         CHECK_FUNC(get_arg, asm_ptr, &cur_char, &arg);
         if (arg.type == COMMAND_TYPE) {
+
+            #undef HANDLE_COMMAND
+            #define HANDLE_COMMAND(name)                            \
+            case name ## _COMMAND:                                  \
+                CHECK_FUNC(name ## _compilate, asm_ptr, &cur_char); \
+                break;
+
             switch (arg.elem.command) {
-                case HLT_COMMAND: //TODO - possible macros
-                    CHECK_FUNC(HLT_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case PUSH_COMMAND:
-                    CHECK_FUNC(PUSH_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case PUSHR_COMMAND:
-                    CHECK_FUNC(PUSHR_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case POP_COMMAND:
-                    CHECK_FUNC(POP_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case POPR_COMMAND:
-                    CHECK_FUNC(POPR_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case ADD_COMMAND:
-                    CHECK_FUNC(ADD_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case SUB_COMMAND:
-                    CHECK_FUNC(SUB_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case MLT_COMMAND:
-                    CHECK_FUNC(MLT_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case DIV_COMMAND:
-                    CHECK_FUNC(DIV_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case SQRT_COMMAND:
-                    CHECK_FUNC(SQRT_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case POW_COMMAND:
-                    CHECK_FUNC(POW_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case IN_COMMAND:
-                    CHECK_FUNC(IN_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case OUT_COMMAND:
-                    CHECK_FUNC(OUT_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case JMP_COMMAND:
-                    CHECK_FUNC(JMP_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case JB_COMMAND:
-                    CHECK_FUNC(JB_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case JBE_COMMAND:
-                    CHECK_FUNC(JBE_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case JA_COMMAND:
-                    CHECK_FUNC(JA_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case JAE_COMMAND:
-                    CHECK_FUNC(JAE_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case JE_COMMAND:
-                    CHECK_FUNC(JE_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case JNE_COMMAND:
-                    CHECK_FUNC(JNE_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case CALL_COMMAND:
-                    CHECK_FUNC(CALL_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case RET_COMMAND:
-                    CHECK_FUNC(RET_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case PUSHM_COMMAND:
-                    CHECK_FUNC(PUSHM_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case POPM_COMMAND:
-                    CHECK_FUNC(POPM_compilate, asm_ptr, &cur_char);
-                    break;
-
-                case DRAW_COMMAND:
-                    CHECK_FUNC(DRAW_compilate, asm_ptr, &cur_char);
-                    break;
+                //TODO -
+                #include "Command_list.h"
 
                 case __ASM_COMMAND_COUNT:
                 default:

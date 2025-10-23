@@ -7,8 +7,7 @@
 #define UNKNOWN_ASM_COMMAND 1'000
 #define INVALID_REGISTER    1'001
 #define INVALID_LABEL       1'002
-#define UNKNOWN_ASM_TYPE    1'003
-#define BYTE_CODE_TOO_LONG  1'004
+#define BYTE_CODE_TOO_LONG  1'003
 
 union Assembler_elem {
     byte_elem_t  command;
@@ -43,40 +42,13 @@ errno_t Assembler_Ctor(Assembler *asm_ptr, FILE *code_stream);
 
 void Assembler_Dtor(Assembler *asm_ptr);
 
+#undef HANDLE_COMMAND
+#define HANDLE_COMMAND(name)    \
+name ## _COMMAND,
+
 enum Asm_command_code : byte_elem_t {
-    HLT_COMMAND,
-
-    PUSH_COMMAND,
-    PUSHR_COMMAND,
-    POP_COMMAND,
-    POPR_COMMAND,
-
-    ADD_COMMAND,
-    SUB_COMMAND,
-    MLT_COMMAND,
-    DIV_COMMAND,
-
-    SQRT_COMMAND,
-    POW_COMMAND,
-
-    IN_COMMAND,
-    OUT_COMMAND,
-
-    JMP_COMMAND,
-    JB_COMMAND,
-    JBE_COMMAND,
-    JA_COMMAND,
-    JAE_COMMAND,
-    JE_COMMAND,
-    JNE_COMMAND,
-
-    CALL_COMMAND,
-    RET_COMMAND,
-
-    PUSHM_COMMAND,
-    POPM_COMMAND,
-
-    DRAW_COMMAND,
+    //TODO - 
+    #include "Command_list.h"
 
     __ASM_COMMAND_COUNT,
 };
