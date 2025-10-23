@@ -294,9 +294,9 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
         byte_elem_t const cur_command = SPU_ptr->byte_code[IC++].command;
 
         #undef HANDLE_COMMAND
-        #define HANDLE_COMMAND(name)                                \
-        case name ## _COMMAND:                                      \
-                CHECK_FUNC(name ## _execute, SPU_ptr, &IC);   \
+        #define HANDLE_COMMAND(name)                        \
+        case name ## _COMMAND:                              \
+                CHECK_FUNC(name ## _execute, SPU_ptr, &IC); \
                 break;
 
         switch(cur_command) {

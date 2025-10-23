@@ -35,11 +35,11 @@ struct SPU {
 
 uint64_t SPU_hash(SPU const *SPU_ptr);
 
-#define INVALID_POSITION                1'000
-#define NOT_ENOUGH_ARGUMENTS            1'001
-#define INVALID_INDEX                   1'002
-#define STACK_NOT_EMPTY_AFTER_EXECUTION 1'003
-#define NO_HLT_COMMAND_REACHED          1'004
+#define INVALID_POSITION                3'000
+#define NOT_ENOUGH_ARGUMENTS            3'001
+#define INVALID_INDEX                   3'002
+#define STACK_NOT_EMPTY_AFTER_EXECUTION 3'003
+#define NO_HLT_COMMAND_REACHED          3'004
 
 errno_t SPU_Ctor(SPU *SPU_ptr, size_t start_capacity, FILE *byte_code_stream
                  ON_DEBUG(, Var_info var_info));

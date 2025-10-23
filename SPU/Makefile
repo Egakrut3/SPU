@@ -1,17 +1,12 @@
 BIN_DIR = ./bin/
 BIN_SUF = .o
 make_bin_path = $(addprefix $(BIN_DIR), $(addsuffix $(BIN_SUF), $(1)))
-make_dir_bin_path = $(addprefix $(1), $(call make_bin_path, $(2)))
 
 SRC_DIR = ./src/
 SRC_SUF = .cpp
 make_src_path = $(addprefix $(SRC_DIR), $(addsuffix $(SRC_SUF), $(1)))
-make_dir_src_path = $(addprefix $(1), $(call make_src_path, $(2)))
 
-H_DIR = ./Assembler/include/ ./SPU/include/ ./include/
-
-LIB_DIR = static_libs/
-LIBS = Colored_printf My_stack
+H_DIR = ./include/ ../include/ ../Assembler/include
 
 CXX = g++
 CXX_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline   \
@@ -22,35 +17,22 @@ CXX_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing -Wstrict-null-sentinel -Wtype-limits           \
 -Wwrite-strings -Werror=vla -D_EJUDGE_CLIENT_SIDE -D__USE_MINGW_ANSI_STDIO -D_DEBUG
 
-TARGET = $(addprefix ./bin/, Test.exe)
-
-Assembler_OBJ = Assembler_basic Assembler_functions
-SPU_OBJ = SPU_basic SPU_functions
-OBJ = Common main
+OBJ = SPU_basic SPU_functions
 
 make_object = $(call make_bin_path, $(1)) : $(call make_src_path, $(1)); \
-@$(CXX) $(CXX_FLAGS) -c $$< $(addprefix -I, $(H_DIR)) -o $$@
-make_dir_object = $(call make_dir_bin_path, $(1), $(2)) : $(call make_dir_src_path, $(1), $(2)); \
 @$(CXX) $(CXX_FLAGS) -c $$< $(addprefix -I, $(H_DIR)) -o $$@
 
 .PHONY : all prepare clean
 
 all : prepare $(call make_bin_path, $(OBJ))
-	@$(CXX) $(CXX_FLAGS) $(call make_dir_bin_path, ./Assembler/, $(Assembler_OBJ))	\
-						 $(call make_dir_bin_path, ./SPU/, $(SPU_OBJ))				\
-			  			 $(call make_bin_path, $(OBJ))								\
-            -L$(LIB_DIR) $(addprefix -l, $(LIBS)) -o $(TARGET)
-	@echo Compilation end
-	@$(TARGET)
+	@echo SPU compilation end
 
 prepare :
-	@make -C ./Assembler/
-	@make -C ./SPU/
 	@mkdir -p ./bin/
 
-$(call make_object, main)
+$(call make_object, SPU_basic)
 
-$(call make_object, Common)
+$(call make_object, SPU_functions)
 
 clean:
-	@rm -rf ./bin/ Byte_code Text_byte_code.txt
+	@rm -rf ./bin/
