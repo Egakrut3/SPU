@@ -259,7 +259,7 @@ static errno_t parse_commands(Assembler *const asm_ptr) {
     size_t cur_char = 0;
     while (cur_char                    < asm_ptr->code_len  and
            asm_ptr->byte_code_len      < BYTE_CODE_MAX_LEN ON_DEBUG(and
-           asm_ptr->text_byte_code_len < BYTE_CODE_MAX_LEN)) { //TODO -
+           asm_ptr->text_byte_code_len < BYTE_CODE_MAX_LEN)) {
         Asm_arg arg = {};
         CHECK_FUNC(get_arg, asm_ptr, &cur_char, &arg);
         if (arg.type == COMMAND_TYPE) {
