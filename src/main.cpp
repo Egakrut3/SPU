@@ -1,6 +1,7 @@
 #include "Common.h"
 #include "Assembler.h"
 #include "SPU.h"
+//TODO - possible separate command functions from .cpp files
 
 int main(int const argc, char const *const *const argv) {
     assert(argc > 0); assert(argv); assert(*argv);
