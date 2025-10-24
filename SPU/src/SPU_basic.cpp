@@ -52,6 +52,12 @@ errno_t SPU_Ctor(SPU *const SPU_ptr, size_t const start_capacity, FILE *const by
     CHECK_FUNC(My_fread, SPU_ptr->byte_code, sizeof(*SPU_ptr->byte_code), SPU_ptr->byte_code_len,
                          byte_code_stream);
 
+    for (size_t i = 0; i < SPU_MEM_SIZE_SQRT; ++i) {
+        for (size_t j = 0; j < SPU_MEM_SIZE_SQRT; ++j) {
+            SPU_ptr->memory[i * SPU_MEM_SIZE_SQRT + j] = '.';
+        }
+    }
+
     SPU_ptr->is_valid          = true;
     ON_DEBUG(SPU_ptr->hash_val = SPU_hash(SPU_ptr);)
 

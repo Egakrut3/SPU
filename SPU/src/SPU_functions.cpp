@@ -300,7 +300,10 @@ errno_t SPU_execute(SPU *const SPU_ptr) {
                 break;
 
         switch(cur_command) {
-            //TODO -
+            //This include generates cases for
+            //all Asm-commands by applying previously
+            //declared macros HANDLE_COMMAND to all
+            //existing commands in Assembler
             #include "Command_list.h"
 
             default:

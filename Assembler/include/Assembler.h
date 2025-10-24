@@ -4,10 +4,10 @@
 #include "Common.h"
 #include "My_stack.h"
 
-#define UNKNOWN_ASM_COMMAND 2'000
-#define INVALID_REGISTER    2'001
-#define INVALID_LABEL       2'002
-#define BYTE_CODE_TOO_LONG  2'003
+#define UNKNOWN_ASM_COMMAND 3'000
+#define INVALID_REGISTER    3'001
+#define INVALID_LABEL       3'002
+#define BYTE_CODE_TOO_LONG  3'003
 
 union Assembler_elem {
     byte_elem_t  command;
@@ -47,11 +47,14 @@ void Assembler_Dtor(Assembler *asm_ptr);
 name ## _COMMAND,
 
 enum Asm_command_code : byte_elem_t {
-    //TODO -
+    //This include generates enum-states for
+    //all Asm-commands by applying previously
+    //declared macros HANDLE_COMMAND to all
+    //existing commands in Assembler
     #include "Command_list.h"
 };
 
 errno_t compilate(FILE *code_stream, FILE *byte_code_stream
-       ON_DEBUG(, FILE *text_byte_code_stream));
+                          ON_DEBUG(, FILE *text_byte_code_stream));
 
 #endif

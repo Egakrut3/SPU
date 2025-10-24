@@ -85,7 +85,11 @@ static errno_t get_arg(Assembler const *const asm_ptr, size_t *const cur_char_pt
         return 0;                                   \
     }
 
-    //TODO -
+    //This include recieves enum-number of
+    //command from its string-name by
+    //applying previously declared macros
+    //HANDLE_COMMAND to all existing commands
+    //in Assembler
     #include "Command_list.h"
 
     return UNKNOWN_ASM_COMMAND;
@@ -200,7 +204,7 @@ static errno_t name ## _compilate(Assembler *const asm_ptr, size_t *const cur_ch
     return 0;                                                                                           \
 }
 
-//TODO - possible include
+//TODO - possible by include
 MAKE_SIMPLE_COMPILATE(HLT)
 
 MAKE_VAL_COMPILATE(PUSH)
@@ -236,6 +240,7 @@ MAKE_REG_COMPILATE(POPM)
 MAKE_SIMPLE_COMPILATE(DRAW)
 
 static errno_t set_labels(Assembler *const asm_ptr) {
+    //TODO - possible use functions or split lines
     size_t cur_char  = 0,
            arg_count = 0;
     while (cur_char < asm_ptr->code_len) {
@@ -271,7 +276,10 @@ static errno_t parse_commands(Assembler *const asm_ptr) {
                 break;
 
             switch (arg.elem.command) {
-                //TODO -
+                //This include generates cases for
+                //all Asm-commands by applying previously
+                //declared macros HANDLE_COMMAND to all
+                //existing commands in Assembler
                 #include "Command_list.h"
 
                 default:

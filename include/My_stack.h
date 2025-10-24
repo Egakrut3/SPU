@@ -57,13 +57,13 @@ handler(My_stack_Ctor, &name, start_capacity)
 
 void My_stack_Dtor(My_stack *stack_ptr);
 
-#define STACK_HASH_UNMATCH               0B10000000000
-#define STACK_CANARY_SPOILED             0B100000000000
-#define STACK_INVALID                    0B1000000000000
-#define STACK_NULL_CAPACITY              0B10000000000000
-#define STACK_SIZE_GREATER_THAN_CAPACITY 0B100000000000000
-#define STACK_NULL_BUFFER                0B1000000000000000
-#define STACK_BUFFER_CANARY_SPOILED      0B10000000000000000
+#define STACK_HASH_UNMATCH               0B10'000'000'000
+#define STACK_CANARY_SPOILED             0B100'000'000'000
+#define STACK_INVALID                    0B1'000'000'000'000
+#define STACK_NULL_CAPACITY              0B10'000'000'000'000
+#define STACK_SIZE_GREATER_THAN_CAPACITY 0B100'000'000'000'000
+#define STACK_NULL_BUFFER                0B1'000'000'000'000'000
+#define STACK_BUFFER_CANARY_SPOILED      0B10'000'000'000'000'000
 errno_t My_stack_verify(My_stack const *stack_ptr);
 
 errno_t My_stack_dump(FILE *out_stream, My_stack const *stack_ptr,
@@ -73,7 +73,7 @@ errno_t My_stack_dump(FILE *out_stream, My_stack const *stack_ptr,
 #define STACK_DUMP(out_stream, name, error, handler)                                                    \
 handler(My_stack_dump, out_stream, &name, error, Position_info{__FILE__, __func__, __LINE__}, 0, true)
 
-#define ATTEMPT_TO_ACCESS_TOP_FROM_EMPTY 1000
+#define ATTEMPT_TO_ACCESS_TOP_FROM_EMPTY 2'000
 
 errno_t My_stack_push(My_stack *stack_ptr, stack_elem_t elem);
 
