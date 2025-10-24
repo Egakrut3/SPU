@@ -3,7 +3,6 @@
 #include "Assembler.h"
 #include "SPU.h"
 //TODO - possible separate command functions from .cpp files
-//TODO - review code
 //TODO - review Makefile
 
 int main(int const argc, char const *const *const argv) {
