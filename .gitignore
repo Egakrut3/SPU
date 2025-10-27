@@ -1,6 +1,5 @@
 *.txt
 Byte_code
 bin/
-Others/bin/
 Assembler/bin/
 SPU/bin/
